@@ -12,6 +12,18 @@
     <packaging>jar</packaging>
     <name>VelocityLogs (BungeeCord 1.8)</name>
 
+    <repositories>
+        <!-- BungeeCord artifacts live here -->
+        <repository>
+            <id>sonatype-oss</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
+            <id>codemc-bungee</id>
+            <url>https://repo.codemc.io/repository/maven-public/</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>net.md-5</groupId>

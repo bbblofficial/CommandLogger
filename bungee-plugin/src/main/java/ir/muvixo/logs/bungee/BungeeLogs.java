@@ -1,10 +1,9 @@
 package ir.muvixo.logs.bungee;
 
 import net.md_5.bungee.api.plugin.Plugin;
-import net.md_5.bungee.api.plugin.PluginManager;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
-import net.md_5.bungee.api.ProxyServer;
 
+import java.io.File;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -25,11 +24,17 @@ public class BungeeLogs extends Plugin {
 
     @Override
     public void onEnable() {
-        saveDefaultConfig();
+        // BungeeCord has no saveDefaultConfig(); Config handles its own defaults.
+        if (!getDataFolder().exists()) {
+            getDataFolder().mkdirs();
+        }
+
         this.config = new Config(this);
         this.config.load();
 
         this.opManager = new OpPlayerManager(this, config);
+        getProxy().getPluginManager().registerListener(this, opManager);
+
         this.permissionChecker = new PermissionChecker(config, opManager, this);
 
         this.receiver = new BackendMessageReceiver(this, config, opManager, permissionChecker);
@@ -45,12 +50,8 @@ public class BungeeLogs extends Plugin {
             opSyncTask = getProxy().getScheduler().schedule(this, new Runnable() {
                 @Override
                 public void run() {
-                    for (net.md_5.bungee.api.connection.ProxiedPlayer p : getProxy().getPlayers()) {
-                        if (p.isConnected()) {
-                            // OP status is reported by backend, but we refresh
-                            // the lastSeen timestamp for online players.
-                        }
-                    }
+                    // OP status is reported by backend on join/quit/command.
+                    // This task exists as a hook for future expansion.
                 }
             }, interval, interval, TimeUnit.MINUTES);
         }

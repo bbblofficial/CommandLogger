@@ -8,12 +8,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 
 /**
  * Config wrapper for BungeeLogs v2.2.
+ *
+ * BungeeCord has no saveDefaultConfig(), so we copy the bundled
+ * config.yml from the jar manually.
  *
  * @author muvixo
  */
@@ -49,11 +49,16 @@ public class Config {
                 try (InputStream in = plugin.getResourceAsStream("config.yml")) {
                     if (in != null) {
                         Files.copy(in, file.toPath());
+                    } else {
+                        // Fallback: write an empty file so YAML load doesn't NPE
+                        Files.write(file.toPath(), new byte[0]);
                     }
                 }
             }
 
-            Configuration cfg = ConfigurationProvider.getProvider(YamlConfiguration.class).load(file);
+            Configuration cfg = ConfigurationProvider
+                    .getProvider(YamlConfiguration.class)
+                    .load(file);
 
             this.channel = cfg.getString("channel", "velocitylogs:main");
             this.showToSelf = cfg.getBoolean("show-to-self", false);

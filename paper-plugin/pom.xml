@@ -12,12 +12,32 @@
     <packaging>jar</packaging>
     <name>VelocityLogs (Paper 1.8+)</name>
 
+    <repositories>
+        <!-- Spigot API for 1.8.8 (Paper 1.8 is binary compatible) -->
+        <repository>
+            <id>spigotmc-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
+            <id>sonatype-oss</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        </repository>
+    </repositories>
+
     <dependencies>
+        <!-- Use Spigot API; Paper 1.8 is a superset of Spigot 1.8.
+             paper-api 1.8.8 is not published to repo.papermc.io. -->
         <dependency>
-            <groupId>com.destroystokyo.paper</groupId>
-            <artifactId>paper-api</artifactId>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
             <version>1.8.8-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.md-5</groupId>
+                    <artifactId>bungeecord-chat</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
