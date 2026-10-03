@@ -1,36 +1,25 @@
 # ============================================================
 #  CommandLogger-Spigot v2.2 - backend config
-#  Author: muvixo
+#  Created by Muvixo
 # ============================================================
 
-# Plugin messaging channel. MUST match the proxy side.
 channel: "commandlogger:main"
 
-# Name of this backend server.
-# Leave empty to auto-detect.
 server-name: ""
 
-# Send commands to the proxy even for OP players?
 log-ops: true
 
-# Send OP status to the proxy on player join, quit, AND with every command?
 report-op-status: true
 
-# Also report OP status periodically as a safety net.
 op-status-interval-minutes: 1
 
-# Hide these commands from being forwarded.
 blacklist:
   - "login"
   - "register"
   - "changepassword"
 
-# Ignore commands from these players entirely.
 ignored-players: []
 
-# ============================================================
-#  Permission Nodes
-# ============================================================
 permissions:
   use:      "commandlogger.use"
   creator:  "commandlogger.creator"

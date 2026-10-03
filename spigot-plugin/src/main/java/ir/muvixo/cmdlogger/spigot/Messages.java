@@ -4,10 +4,10 @@ import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -20,7 +20,7 @@ import java.util.Map;
 public final class Messages {
 
     private final CommandLogger plugin;
-    private final Map<String, String> defaults = new LinkedHashMap<>();
+    private final Map<String, String> defaults = new LinkedHashMap<String, String>();
     private FileConfiguration cfg;
     private File file;
 
@@ -57,7 +57,7 @@ public final class Messages {
     private String readBundled() {
         try (InputStream in = plugin.getResource("messages.yml")) {
             if (in == null) return "# missing\n";
-            java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
             byte[] buf = new byte[4096];
             int n;
             while ((n = in.read(buf)) > 0) bos.write(buf, 0, n);
@@ -95,10 +95,13 @@ public final class Messages {
     }
 
     public String raw(String key) {
-        if (cfg == null) return defaults.getOrDefault(key, "");
+        if (cfg == null) {
+            String v = defaults.get(key);
+            return v == null ? "" : v;
+        }
         String v = cfg.getString(key);
-        if (v == null) v = defaults.getOrDefault(key, "");
-        return v;
+        if (v == null) v = defaults.get(key);
+        return v == null ? "" : v;
     }
 
     public String raw(String key, Object... kv) {
@@ -109,7 +112,6 @@ public final class Messages {
         return s;
     }
 
-    /** Colored string for Spigot (legacy only). */
     public String color(String key) {
         return ChatColor.translateAlternateColorCodes('&', raw(key));
     }

@@ -1,14 +1,14 @@
 name: CommandLogger-Spigot
 main: ir.muvixo.cmdlogger.spigot.CommandLogger
 version: ${project.version}
-author: muvixo
+author: Muvixo
 description: Forwards every command executed by players to the proxy
 
 commands:
-  vlogs:
+  clogs:
     description: CommandLogger Spigot helper command
     usage: /clogs help
-    aliases: [velogs, commandlogger]
+    aliases: [clog, cmdlogger, cmdlogs]
 
 permissions:
   commandlogger.use:

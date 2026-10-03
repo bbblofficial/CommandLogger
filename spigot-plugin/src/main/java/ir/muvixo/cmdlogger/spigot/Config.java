@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 /**
  * Config wrapper for CommandLogger v2.2.
  *
- * @author muvixo
+ * Created by Muvixo
  */
 public class Config {
 
