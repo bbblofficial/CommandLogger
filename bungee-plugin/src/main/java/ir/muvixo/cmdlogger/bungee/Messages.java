@@ -4,6 +4,7 @@ import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,7 +21,7 @@ import java.util.Map;
 public final class Messages {
 
     private final CommandLogger plugin;
-    private final Map<String, String> defaults = new LinkedHashMap<>();
+    private final Map<String, String> defaults = new LinkedHashMap<String, String>();
     private Configuration cfg;
     private File file;
 
@@ -63,7 +64,7 @@ public final class Messages {
     private String readBundled() {
         try (InputStream in = plugin.getResourceAsStream("messages.yml")) {
             if (in == null) return "# missing\n";
-            java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
             byte[] buf = new byte[4096];
             int n;
             while ((n = in.read(buf)) > 0) bos.write(buf, 0, n);
@@ -94,7 +95,10 @@ public final class Messages {
     private int mergeMissingKeys() {
         int added = 0;
         for (Map.Entry<String, String> e : defaults.entrySet()) {
-            if (!cfg.contains(e.getKey())) {
+            // BungeeCord Configuration has no contains(); getString() returns
+            // the default value if the key is missing.
+            String existing = cfg.getString(e.getKey());
+            if (existing == null) {
                 cfg.set(e.getKey(), e.getValue());
                 added++;
             }
@@ -103,10 +107,13 @@ public final class Messages {
     }
 
     public String raw(String key) {
-        if (cfg == null) return defaults.getOrDefault(key, "");
+        if (cfg == null) {
+            String v = defaults.get(key);
+            return v == null ? "" : v;
+        }
         String v = cfg.getString(key);
-        if (v == null) v = defaults.getOrDefault(key, "");
-        return v;
+        if (v == null) v = defaults.get(key);
+        return v == null ? "" : v;
     }
 
     public String raw(String key, Object... kv) {

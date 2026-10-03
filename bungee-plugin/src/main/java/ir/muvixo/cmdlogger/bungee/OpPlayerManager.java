@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Tracks which players are OP on a backend server.
  *
- * @author muvixo
+ * Created by Muvixo
  */
 public class OpPlayerManager implements Listener {
 
@@ -62,11 +62,11 @@ public class OpPlayerManager implements Listener {
 
         OpRecord rec = new OpRecord(uuid, playerName, serverName);
         opPlayers.put(uuid, rec);
-        if (playerName != null) {
-            nameIndex.put(playerName.toLowerCase(), uuid);
-        }
+        if (playerName != null) nameIndex.put(playerName.toLowerCase(), uuid);
+
         if (config.isDebug()) {
-            plugin.getLogger().info("[OP-TRACK] Marked " + playerName + " (" + uuid + ") as OP (backend: " + serverName + ")");
+            plugin.getLogger().info("[OP-TRACK] Marked " + playerName
+                    + " (" + uuid + ") as OP (backend: " + serverName + ")");
         }
     }
 
@@ -80,9 +80,7 @@ public class OpPlayerManager implements Listener {
                 plugin.getLogger().info("[OP-TRACK] Unmarked " + removed.name + " (" + uuid + ")");
             }
         }
-        if (playerName != null) {
-            nameIndex.remove(playerName.toLowerCase());
-        }
+        if (playerName != null) nameIndex.remove(playerName.toLowerCase());
     }
 
     public boolean isOp(UUID uuid) {
@@ -127,9 +125,7 @@ public class OpPlayerManager implements Listener {
     public void onDisconnect(PlayerDisconnectEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
         OpRecord rec = opPlayers.get(uuid);
-        if (rec != null) {
-            rec.lastSeen = System.currentTimeMillis();
-        }
+        if (rec != null) rec.lastSeen = System.currentTimeMillis();
     }
 
     @EventHandler

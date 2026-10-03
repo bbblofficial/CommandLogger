@@ -12,10 +12,7 @@ import java.nio.file.Files;
 /**
  * Config wrapper for CommandLogger v2.2.
  *
- * BungeeCord has no saveDefaultConfig(), so we copy the bundled
- * config.yml from the jar manually.
- *
- * @author muvixo
+ * Created by Muvixo
  */
 public class Config {
 
@@ -40,9 +37,7 @@ public class Config {
 
     public void load() {
         try {
-            if (!plugin.getDataFolder().exists()) {
-                plugin.getDataFolder().mkdirs();
-            }
+            if (!plugin.getDataFolder().exists()) plugin.getDataFolder().mkdirs();
 
             File file = new File(plugin.getDataFolder(), "config.yml");
             if (!file.exists()) {
@@ -50,7 +45,6 @@ public class Config {
                     if (in != null) {
                         Files.copy(in, file.toPath());
                     } else {
-                        // Fallback: write an empty file so YAML load doesn't NPE
                         Files.write(file.toPath(), new byte[0]);
                     }
                 }

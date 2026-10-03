@@ -5,7 +5,7 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 /**
  * Central permission checker for BungeeCord.
  *
- * @author muvixo
+ * Created by Muvixo
  */
 public class PermissionChecker {
 
