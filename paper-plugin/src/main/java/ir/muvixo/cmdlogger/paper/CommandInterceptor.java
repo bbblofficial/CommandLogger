@@ -1,4 +1,4 @@
-package ir.muvixo.logs.spigot;
+package ir.muvixo.cmdlogger.paper;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
@@ -17,10 +17,10 @@ import org.bukkit.event.player.PlayerQuitEvent;
  */
 public class CommandInterceptor implements Listener {
 
-    private final SpigotLogs plugin;
+    private final CommandLogger plugin;
     private final Config config;
 
-    public CommandInterceptor(SpigotLogs plugin, Config config) {
+    public CommandInterceptor(CommandLogger plugin, Config config) {
         this.plugin = plugin;
         this.config = config;
     }
@@ -68,7 +68,7 @@ public class CommandInterceptor implements Listener {
         if (command.isEmpty()) return;
 
         String base = command.split(" ", 2)[0].toLowerCase();
-        if (base.equals("vlogs") || base.equals("velogs") || base.equals("velocitylogs")) return;
+        if (base.equals("clogs") || base.equals("clog") || base.equals("commandlogger")) return;
 
         if (config.isBlacklisted(command)) return;
 

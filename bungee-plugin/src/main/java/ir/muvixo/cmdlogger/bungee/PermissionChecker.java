@@ -1,4 +1,4 @@
-package ir.muvixo.logs.bungee;
+package ir.muvixo.cmdlogger.bungee;
 
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
@@ -12,7 +12,7 @@ public class PermissionChecker {
     private final Config config;
     private final OpPlayerManager opManager;
 
-    public PermissionChecker(Config config, OpPlayerManager opManager, BungeeLogs plugin) {
+    public PermissionChecker(Config config, OpPlayerManager opManager, CommandLogger plugin) {
         this.config = config;
         this.opManager = opManager;
     }

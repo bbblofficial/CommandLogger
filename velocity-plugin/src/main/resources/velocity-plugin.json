@@ -1,8 +1,8 @@
 {
-  "id": "velocity-logs",
-  "name": "VelocityLogs",
+  "id": "commandlogger",
+  "name": "CommandLogger",
   "version": "${project.version}",
   "description": "Broadcasts commands from backend Spigot servers to staff",
   "authors": ["muvixo"],
-  "main": "ir.muvixo.logs.velocity.VelocityLogs"
+  "main": "ir.muvixo.cmdlogger.velocity.CommandLogger"
 }

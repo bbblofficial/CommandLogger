@@ -1,4 +1,4 @@
-name: Build Plugins
+name: Build CommandLogger
 
 on:
   push:
@@ -27,27 +27,27 @@ jobs:
       - name: Upload Velocity plugin
         uses: actions/upload-artifact@v4
         with:
-          name: velocity-logs-velocity
-          path: velocity-plugin/target/velocity-logs-velocity-*.jar
+          name: commandlogger-velocity
+          path: velocity-plugin/target/commandlogger-velocity-*.jar
           if-no-files-found: error
 
       - name: Upload BungeeCord plugin
         uses: actions/upload-artifact@v4
         with:
-          name: velocity-logs-bungee
-          path: bungee-plugin/target/velocity-logs-bungee-*.jar
+          name: commandlogger-bungee
+          path: bungee-plugin/target/commandlogger-bungee-*.jar
           if-no-files-found: error
 
       - name: Upload Spigot plugin
         uses: actions/upload-artifact@v4
         with:
-          name: velocity-logs-spigot
-          path: spigot-plugin/target/velocity-logs-spigot-*.jar
+          name: commandlogger-spigot
+          path: spigot-plugin/target/commandlogger-spigot-*.jar
           if-no-files-found: error
 
       - name: Upload Paper plugin
         uses: actions/upload-artifact@v4
         with:
-          name: velocity-logs-paper
-          path: paper-plugin/target/velocity-logs-paper-*.jar
+          name: commandlogger-paper
+          path: paper-plugin/target/commandlogger-paper-*.jar
           if-no-files-found: error

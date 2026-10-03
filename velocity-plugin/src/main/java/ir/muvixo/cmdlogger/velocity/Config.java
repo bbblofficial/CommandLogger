@@ -1,4 +1,4 @@
-package ir.muvixo.logs.velocity;
+package ir.muvixo.cmdlogger.velocity;
 
 import org.slf4j.Logger;
 import org.spongepowered.configurate.CommentedConfigurationNode;
@@ -10,7 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Config manager for VelocityLogs v2.2.
+ * Config manager for CommandLogger v2.2.
  *
  * @author muvixo
  */
@@ -55,7 +55,7 @@ public class Config {
             return;
         }
 
-        this.channel = root.node("channel").getString("velocitylogs:main");
+        this.channel = root.node("channel").getString("commandlogger:main");
         this.showToSelf = root.node("show-to-self").getBoolean(false);
         this.logToConsole = root.node("log-to-console").getBoolean(true);
         this.debug = root.node("debug").getBoolean(false);
@@ -69,9 +69,9 @@ public class Config {
                 "&c[!] You don't have permission to do that!");
 
         this.seePermission = root.node("permissions", "see")
-                .getString("velocitylogs.see");
+                .getString("commandlogger.see");
         this.adminPermission = root.node("permissions", "admin")
-                .getString("velocitylogs.admin");
+                .getString("commandlogger.admin");
     }
 
     public String getChannel() { return channel; }

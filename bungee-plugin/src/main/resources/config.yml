@@ -1,10 +1,10 @@
 # ============================================================
-#  BungeeLogs v2.2 - BungeeCord config
+#  CommandLogger v2.2 - BungeeCord config
 #  Author: muvixo
 # ============================================================
 
 # Plugin messaging channel. MUST match the Spigot/Paper side.
-channel: "velocitylogs:main"
+channel: "commandlogger:main"
 
 # ---------------- Behaviour ----------------
 # Show the command log to the player who typed it?
@@ -43,9 +43,9 @@ no-permission-message: "&c[!] You don't have permission to do that!"
 #    3. They have the "admin" permission below.
 #
 #  Grant with LuckPerms (or any perm plugin):
-#    /lp group staff permission set velocitylogs.see   true
-#    /lp group admin permission set velocitylogs.admin true
+#    /lp group staff permission set commandlogger.see   true
+#    /lp group admin permission set commandlogger.admin true
 # ============================================================
 permissions:
-  see:   "velocitylogs.see"
-  admin: "velocitylogs.admin"
+  see:   "commandlogger.see"
+  admin: "commandlogger.admin"

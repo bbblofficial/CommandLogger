@@ -1,4 +1,4 @@
-# VelocityLogs v2.2
+# CommandLogger v2.2
 
 Logs **every command** any player types on any backend server and broadcasts
 them to staff / OP players on the proxy.
@@ -13,8 +13,8 @@ Supports **Velocity**, **BungeeCord 1.8+**, **Spigot 1.8+**, and **Paper 1.8+**.
 - **Paper support** - native Paper 1.8+ backend plugin.
 - **Bulletproof OP detection** - OP status is attached to *every* command.
 - **UUID-based tracking** - no more name-change or case bugs.
-- **`/logs op <player>` / `/logs unop <player>`** - manual overrides.
-- **`/logs list`** - see all currently tracked OPs.
+- **`/clogs op <player>` / `/clogs unop <player>`** - manual overrides.
+- **`/clogs list`** - see all currently tracked OPs.
 - **`force-see-players`** - a config list of players who always see logs.
 
 ## Modules
@@ -30,14 +30,14 @@ Supports **Velocity**, **BungeeCord 1.8+**, **Spigot 1.8+**, and **Paper 1.8+**.
 
 | Command | Description |
 |---------|-------------|
-| `/logs` | Show plugin info |
-| `/logs help` | Show help |
-| `/logs reload` | Reload config |
-| `/logs debug <player>` | Diagnose a player's permissions |
-| `/logs status <player>` | Same as debug |
-| `/logs op <player>` | Manually mark player as OP |
-| `/logs unop <player>` | Manually unmark player |
-| `/logs list` | List all tracked OPs |
+| `/clogs` | Show plugin info |
+| `/clogs help` | Show help |
+| `/clogs reload` | Reload config |
+| `/clogs debug <player>` | Diagnose a player's permissions |
+| `/clogs status <player>` | Same as debug |
+| `/clogs op <player>` | Manually mark player as OP |
+| `/clogs unop <player>` | Manually unmark player |
+| `/clogs list` | List all tracked OPs |
 
 ## Build
 
@@ -46,24 +46,24 @@ mvn clean package
 ```
 
 Outputs:
-- `velocity-plugin/target/velocity-logs-velocity-2.2.0.jar`
-- `bungee-plugin/target/velocity-logs-bungee-2.2.0.jar`
-- `spigot-plugin/target/velocity-logs-spigot-2.2.0.jar`
-- `paper-plugin/target/velocity-logs-paper-2.2.0.jar`
+- `velocity-plugin/target/commandlogger-velocity-2.2.0.jar`
+- `bungee-plugin/target/commandlogger-bungee-2.2.0.jar`
+- `spigot-plugin/target/commandlogger-spigot-2.2.0.jar`
+- `paper-plugin/target/commandlogger-paper-2.2.0.jar`
 
 ## Setup
 
 ### 1. Install the proxy plugin
-- **Velocity:** drop `velocity-logs-velocity-2.2.0.jar` into `plugins/`
-- **BungeeCord:** drop `velocity-logs-bungee-2.2.0.jar` into `plugins/`
+- **Velocity:** drop `commandlogger-velocity-2.2.0.jar` into `plugins/`
+- **BungeeCord:** drop `commandlogger-bungee-2.2.0.jar` into `plugins/`
 
 ### 2. Install the backend plugin
-- **Spigot:** drop `velocity-logs-spigot-2.2.0.jar` into `plugins/`
-- **Paper:** drop `velocity-logs-paper-2.2.0.jar` into `plugins/`
+- **Spigot:** drop `commandlogger-spigot-2.2.0.jar` into `plugins/`
+- **Paper:** drop `commandlogger-paper-2.2.0.jar` into `plugins/`
 
 ### 3. Configure
 Make sure `channel` matches on both proxy and backend configs.
-Default: `velocitylogs:main`
+Default: `commandlogger:main`
 
 ### 4. Register the channel (BungeeCord)
 In your BungeeCord `config.yml`, ensure `bungeecord: true` is set on the

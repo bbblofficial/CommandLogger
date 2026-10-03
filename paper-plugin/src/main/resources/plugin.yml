@@ -1,34 +1,34 @@
-name: VelocityLogs-Paper
-main: ir.muvixo.logs.paper.PaperLogs
+name: CommandLogger-Paper
+main: ir.muvixo.cmdlogger.paper.CommandLogger
 version: ${project.version}
 author: muvixo
 description: Forwards every command executed by players to the proxy
 
 commands:
   vlogs:
-    description: VelocityLogs Paper helper command
-    usage: /vlogs help
-    aliases: [velogs, velocitylogs]
+    description: CommandLogger Paper helper command
+    usage: /clogs help
+    aliases: [velogs, commandlogger]
 
 permissions:
-  velocitylogs.use:
-    description: Access to /vlogs info
+  commandlogger.use:
+    description: Access to /clogs info
     default: op
-  velocitylogs.creator:
+  commandlogger.creator:
     description: See plugin credits
     default: op
-  velocitylogs.admin:
+  commandlogger.admin:
     description: Full admin access
     default: op
-  velocitylogs.reload:
+  commandlogger.reload:
     description: Reload config
     default: op
-  velocitylogs.status:
+  commandlogger.status:
     description: Show plugin status
     default: op
-  velocitylogs.toggle:
+  commandlogger.toggle:
     description: Toggle command forwarding on/off
     default: op
-  velocitylogs.debug:
+  commandlogger.debug:
     description: Toggle debug mode
     default: op

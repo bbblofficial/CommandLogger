@@ -1,11 +1,11 @@
-name: BungeeLogs
-main: ir.muvixo.logs.bungee.BungeeLogs
+name: CommandLogger
+main: ir.muvixo.cmdlogger.bungee.CommandLogger
 version: ${project.version}
 author: muvixo
 description: Forwards every command executed by players to BungeeCord staff
 
 commands:
   logs:
-    description: BungeeLogs main command
-    usage: /logs help
-    aliases: [vlogs, bungeelogs, cmdlogs, commandlogs]
+    description: CommandLogger main command
+    usage: /clogs help
+    aliases: [vlogs, commandlogger, cmdlogs, commandlogs]

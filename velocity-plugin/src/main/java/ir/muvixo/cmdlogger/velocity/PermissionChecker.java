@@ -1,4 +1,4 @@
-package ir.muvixo.logs.velocity;
+package ir.muvixo.cmdlogger.velocity;
 
 import com.velocitypowered.api.proxy.Player;
 import org.slf4j.Logger;

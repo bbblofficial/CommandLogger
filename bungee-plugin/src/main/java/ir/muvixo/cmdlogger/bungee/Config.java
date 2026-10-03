@@ -1,4 +1,4 @@
-package ir.muvixo.logs.bungee;
+package ir.muvixo.cmdlogger.bungee;
 
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
@@ -10,7 +10,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 
 /**
- * Config wrapper for BungeeLogs v2.2.
+ * Config wrapper for CommandLogger v2.2.
  *
  * BungeeCord has no saveDefaultConfig(), so we copy the bundled
  * config.yml from the jar manually.
@@ -19,7 +19,7 @@ import java.nio.file.Files;
  */
 public class Config {
 
-    private final BungeeLogs plugin;
+    private final CommandLogger plugin;
 
     private String channel;
     private String messageFormat;
@@ -34,7 +34,7 @@ public class Config {
     private String seePermission;
     private String adminPermission;
 
-    public Config(BungeeLogs plugin) {
+    public Config(CommandLogger plugin) {
         this.plugin = plugin;
     }
 
@@ -60,7 +60,7 @@ public class Config {
                     .getProvider(YamlConfiguration.class)
                     .load(file);
 
-            this.channel = cfg.getString("channel", "velocitylogs:main");
+            this.channel = cfg.getString("channel", "commandlogger:main");
             this.showToSelf = cfg.getBoolean("show-to-self", false);
             this.logToConsole = cfg.getBoolean("log-to-console", true);
             this.debug = cfg.getBoolean("debug", false);
@@ -75,8 +75,8 @@ public class Config {
             this.noPermissionMessage = cfg.getString("no-permission-message",
                     "&c[!] You don't have permission to do that!");
 
-            this.seePermission = cfg.getString("permissions.see", "velocitylogs.see");
-            this.adminPermission = cfg.getString("permissions.admin", "velocitylogs.admin");
+            this.seePermission = cfg.getString("permissions.see", "commandlogger.see");
+            this.adminPermission = cfg.getString("permissions.admin", "commandlogger.admin");
 
         } catch (IOException e) {
             plugin.getLogger().severe("Could not load config.yml: " + e.getMessage());

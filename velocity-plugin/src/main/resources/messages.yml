@@ -1,0 +1,102 @@
+# ============================================================
+#  CommandLogger v2.2 - Messages
+#  Created by Muvixo
+# ============================================================
+#
+#  You can change any message here.
+#  Supports legacy colors (&a, &c) and hex colors (&#RRGGBB).
+#
+#  Placeholders you can use:
+#    {player}    - player name
+#    {server}    - backend server name
+#    {command}   - the command that was run
+#    {time}      - HH:mm:ss timestamp
+#    {channel}   - the plugin messaging channel
+#    {ops}       - number of tracked OPs
+#    {version}   - plugin version
+#
+#  On startup, any key that is missing from this file will be
+#  automatically added back (with its default value), so you never
+#  have to worry about new keys after an update.
+# ============================================================
+
+# ---------- Broadcast format ----------
+log-format: "&8[&cLogs&8] &e{player} &8>> &b{server} &8>> &f/{command}"
+
+# ---------- Command feedback ----------
+reload-success: "&a[OK] Config reloaded successfully!"
+reload-failed: "&c[!] Failed to reload config."
+no-permission: "&c[!] You don't have permission to do that!"
+unknown-subcommand: "&c[!] Unknown subcommand. Use &e/{label} help&c."
+player-not-found: "&c[!] Player not found: &e{player}"
+usage-op: "&c[!] Usage: &e/{label} op <player>"
+usage-unop: "&c[!] Usage: &e/{label} unop <player>"
+usage-debug: "&c[!] Usage: &e/{label} debug <player>"
+usage-status: "&c[!] Usage: &e/{label} status <player>"
+marked-op: "&a[OK] &e{player} &ais now marked as OP."
+unmarked-op: "&a[OK] &e{player} &ais no longer marked as OP."
+forwarding-enabled: "&a[OK] Command forwarding &lENABLED&a."
+forwarding-disabled: "&c[!] Command forwarding &lDISABLED&c."
+debug-enabled: "&a[OK] Debug mode &lENABLED&a."
+debug-disabled: "&c[!] Debug mode &lDISABLED&c."
+
+# ---------- Help menu ----------
+help-header: "&8&m----------------------------------"
+help-title: "&6&lCommandLogger &7- &eCommands"
+help-section-general: "&e&lGeneral Commands"
+help-section-admin: "&c&lAdmin Commands"
+help-line-help: "  &6/{label} help &8- &7Show this help"
+help-line-info: "  &6/{label} info &8- &7Show plugin info"
+help-line-creator: "  &6/{label} creator &8- &7Show plugin credits"
+help-line-reload: "  &6/{label} reload &8- &7Reload configuration"
+help-line-list: "  &6/{label} list &8- &7List tracked OPs"
+help-line-op: "  &6/{label} op <player> &8- &7Manually mark OP"
+help-line-unop: "  &6/{label} unop <player> &8- &7Manually unmark OP"
+help-line-debug: "  &6/{label} debug <player> &8- &7Diagnose player"
+help-line-status: "  &6/{label} status <player> &8- &7Same as debug"
+help-footer: "&8&m----------------------------------"
+
+# ---------- Info / status ----------
+info-header: "&8&m----------------------------------"
+info-title: "&6&lCommandLogger &7- &eInfo"
+info-channel: "&7Channel: &e{channel}"
+info-server: "&7Server name: &e{server}"
+info-log-ops: "&7Log OPs: &e{value}"
+info-report-op: "&7Report OP status: &e{value}"
+info-forwarding: "&7Forwarding: &e{value}"
+info-debug: "&7Debug: &e{value}"
+info-tracked-ops: "&7Tracked OPs: &e{ops}"
+info-footer: "&8&m----------------------------------"
+
+# ---------- Status command ----------
+status-enabled: "&aENABLED"
+status-disabled: "&cDISABLED"
+status-on: "&aON"
+status-off: "&cOFF"
+
+# ---------- Creator (only shows "Created by Muvixo") ----------
+creator-line-1: "&8&m----------------------------------"
+creator-line-2: "&6&lCommandLogger"
+creator-line-3: "&7Created by &bMuvixo"
+creator-line-4: "&8&m----------------------------------"
+
+# ---------- Debug report ----------
+debug-header: "&8&m----------------------------------"
+debug-title: "&6&lDebug Report &7- &e{player}"
+debug-uuid: "&7UUID: &f{uuid}"
+debug-tracked-op: "&7Tracked as OP: &e{value}"
+debug-op-server: "&7OP server: &e{server}"
+debug-can-see: "&7Can see logs: &e{value}"
+debug-result: "&7Result: &e{value}"
+debug-footer: "&8&m----------------------------------"
+debug-yes: "&aYES"
+debug-no: "&cNO"
+debug-unknown: "&7(none)"
+
+# ---------- Console ----------
+console-command-log: "[{player}@{server}] /{command}  (online: {online}, sent: {sent}, tracked-ops: {ops})"
+console-op-marked: "[OP-TRACK] {player} -> OP (from {server})"
+console-op-unmarked: "[OP-TRACK] {player} -> NOT OP"
+console-config-reloaded: "[CommandLogger] Config reloaded by {player}."
+console-plugin-enabled: "CommandLogger enabled. Channel: {channel}"
+console-plugin-disabled: "CommandLogger disabled."

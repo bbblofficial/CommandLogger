@@ -1,4 +1,4 @@
-package ir.muvixo.logs.bungee;
+package ir.muvixo.cmdlogger.bungee;
 
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
@@ -36,12 +36,12 @@ public class OpPlayerManager implements Listener {
         }
     }
 
-    private final BungeeLogs plugin;
+    private final CommandLogger plugin;
     private final Config config;
     private final Map<UUID, OpRecord> opPlayers = new ConcurrentHashMap<UUID, OpRecord>();
     private final Map<String, UUID> nameIndex = new ConcurrentHashMap<String, UUID>();
 
-    public OpPlayerManager(BungeeLogs plugin, Config config) {
+    public OpPlayerManager(CommandLogger plugin, Config config) {
         this.plugin = plugin;
         this.config = config;
     }

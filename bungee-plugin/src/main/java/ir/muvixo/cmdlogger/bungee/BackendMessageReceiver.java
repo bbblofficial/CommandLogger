@@ -1,4 +1,4 @@
-package ir.muvixo.logs.bungee;
+package ir.muvixo.cmdlogger.bungee;
 
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
@@ -17,21 +17,23 @@ import java.util.UUID;
 /**
  * Receives plugin messages from Spigot/Paper backends on BungeeCord.
  *
- * @author muvixo
+ * Created by Muvixo
  */
 public class BackendMessageReceiver implements Listener {
 
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss");
 
-    private final BungeeLogs plugin;
+    private final CommandLogger plugin;
     private final Config config;
+    private final Messages messages;
     private final OpPlayerManager opManager;
     private final PermissionChecker permChecker;
 
-    public BackendMessageReceiver(BungeeLogs plugin, Config config,
+    public BackendMessageReceiver(CommandLogger plugin, Config config, Messages messages,
                                   OpPlayerManager opManager, PermissionChecker permChecker) {
         this.plugin = plugin;
         this.config = config;
+        this.messages = messages;
         this.opManager = opManager;
         this.permChecker = permChecker;
     }
@@ -39,10 +41,9 @@ public class BackendMessageReceiver implements Listener {
     @EventHandler
     public void onPluginMessage(PluginMessageEvent event) {
         if (!event.getTag().equalsIgnoreCase(config.getChannel())) return;
-
         event.setCancelled(true);
-
         if (!(event.getSender() instanceof Server)) return;
+
         Server server = (Server) event.getSender();
         String sourceServer = server.getInfo().getName();
 
@@ -50,16 +51,11 @@ public class BackendMessageReceiver implements Listener {
             ByteArrayDataInput in = ByteStreams.newDataInput(event.getData());
             String type = in.readUTF();
 
-            if ("OP_STATUS".equals(type)) {
-                handleOpStatus(in, sourceServer);
-            } else if ("CMD".equals(type)) {
-                handleCommand(in, sourceServer);
-            } else {
-                plugin.getLogger().warning("[BungeeLogs] Unknown message type: " + type);
-            }
+            if ("OP_STATUS".equals(type)) handleOpStatus(in, sourceServer);
+            else if ("CMD".equals(type))  handleCommand(in, sourceServer);
+            else plugin.getLogger().warning("[CommandLogger] Unknown message type: " + type);
         } catch (Exception e) {
-            plugin.getLogger().warning("[BungeeLogs] Failed to decode plugin message from "
-                    + sourceServer + ": " + e.getMessage());
+            plugin.getLogger().warning("[CommandLogger] Failed to decode: " + e.getMessage());
         }
     }
 
@@ -73,7 +69,9 @@ public class BackendMessageReceiver implements Listener {
         else      opManager.unmarkOp(uuid, name);
 
         if (config.isDebug()) {
-            plugin.getLogger().info("[OP-TRACK] " + name + " -> " + isOp + " (from " + serverName + ")");
+            plugin.getLogger().info(messages.raw(
+                    isOp ? "console-op-marked" : "console-op-unmarked",
+                    "player", name, "server", serverName));
         }
     }
 
@@ -91,35 +89,33 @@ public class BackendMessageReceiver implements Listener {
     }
 
     private void broadcast(String playerName, String serverName, String command) {
-
         String time = LocalTime.now().format(TIME_FORMAT);
-        String raw = config.getMessageFormat()
-                .replace("{player}",  playerName)
-                .replace("{server}",  serverName)
-                .replace("{command}", command)
-                .replace("{time}",    time);
+        String raw = messages.raw("log-format",
+                "player", playerName,
+                "server", serverName,
+                "command", command,
+                "time", time);
         TextComponent message = new TextComponent(
                 ChatColor.translateAlternateColorCodes('&', raw));
 
         int total = 0, sent = 0;
         for (ProxiedPlayer online : plugin.getProxy().getPlayers()) {
             total++;
-
             if (!permChecker.canSee(online)) continue;
-
             if (!config.isShowToSelf()
-                    && online.getName().equalsIgnoreCase(playerName)) {
-                continue;
-            }
-
+                    && online.getName().equalsIgnoreCase(playerName)) continue;
             online.sendMessage(message);
             sent++;
         }
 
         if (config.isLogToConsole()) {
-            plugin.getLogger().info("[" + playerName + "@" + serverName + "] /"
-                    + command + "  (online: " + total + ", sent: " + sent
-                    + ", tracked-ops: " + opManager.getOpCount() + ")");
+            plugin.getLogger().info(messages.raw("console-command-log",
+                    "player", playerName,
+                    "server", serverName,
+                    "command", command,
+                    "online", total,
+                    "sent", sent,
+                    "ops", opManager.getOpCount()));
         }
     }
 }

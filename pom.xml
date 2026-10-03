@@ -6,10 +6,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ir.muvixo</groupId>
-    <artifactId>velocity-logs-parent</artifactId>
+    <artifactId>commandlogger-parent</artifactId>
     <version>2.2.0</version>
     <packaging>pom</packaging>
-    <name>VelocityLogs Parent</name>
+    <name>CommandLogger Parent</name>
 
     <modules>
         <module>velocity-plugin</module>

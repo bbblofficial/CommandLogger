@@ -1,7 +1,7 @@
 
 #!/usr/bin/env python3
 """
-create_plugin.py - Generates the complete VelocityLogs project structure
+create_plugin.py - Generates the complete CommandLogger project structure
 including Velocity, BungeeCord 1.8, Spigot, and Paper support.
 
 Author: muvixo
@@ -49,29 +49,29 @@ jobs:
       - name: Upload Velocity plugin
         uses: actions/upload-artifact@v4
         with:
-          name: velocity-logs-velocity
-          path: velocity-plugin/target/velocity-logs-velocity-*.jar
+          name: commandlogger-velocity
+          path: velocity-plugin/target/commandlogger-velocity-*.jar
           if-no-files-found: error
 
       - name: Upload BungeeCord plugin
         uses: actions/upload-artifact@v4
         with:
-          name: velocity-logs-bungee
-          path: bungee-plugin/target/velocity-logs-bungee-*.jar
+          name: commandlogger-bungee
+          path: bungee-plugin/target/commandlogger-bungee-*.jar
           if-no-files-found: error
 
       - name: Upload Spigot plugin
         uses: actions/upload-artifact@v4
         with:
-          name: velocity-logs-spigot
-          path: spigot-plugin/target/velocity-logs-spigot-*.jar
+          name: commandlogger-spigot
+          path: spigot-plugin/target/commandlogger-spigot-*.jar
           if-no-files-found: error
 
       - name: Upload Paper plugin
         uses: actions/upload-artifact@v4
         with:
-          name: velocity-logs-paper
-          path: paper-plugin/target/velocity-logs-paper-*.jar
+          name: commandlogger-paper
+          path: paper-plugin/target/commandlogger-paper-*.jar
           if-no-files-found: error
 """
 
@@ -106,7 +106,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-README = """# VelocityLogs v2.2
+README = """# CommandLogger v2.2
 
 Logs **every command** any player types on any backend server and broadcasts
 them to staff / OP players on the proxy.
@@ -121,8 +121,8 @@ Supports **Velocity**, **BungeeCord 1.8+**, **Spigot 1.8+**, and **Paper 1.8+**.
 - **Paper support** - native Paper 1.8+ backend plugin.
 - **Bulletproof OP detection** - OP status is attached to *every* command.
 - **UUID-based tracking** - no more name-change or case bugs.
-- **`/logs op <player>` / `/logs unop <player>`** - manual overrides.
-- **`/logs list`** - see all currently tracked OPs.
+- **`/clogs op <player>` / `/clogs unop <player>`** - manual overrides.
+- **`/clogs list`** - see all currently tracked OPs.
 - **`force-see-players`** - a config list of players who always see logs.
 
 ## Modules
@@ -138,14 +138,14 @@ Supports **Velocity**, **BungeeCord 1.8+**, **Spigot 1.8+**, and **Paper 1.8+**.
 
 | Command | Description |
 |---------|-------------|
-| `/logs` | Show plugin info |
-| `/logs help` | Show help |
-| `/logs reload` | Reload config |
-| `/logs debug <player>` | Diagnose a player's permissions |
-| `/logs status <player>` | Same as debug |
-| `/logs op <player>` | Manually mark player as OP |
-| `/logs unop <player>` | Manually unmark player |
-| `/logs list` | List all tracked OPs |
+| `/clogs` | Show plugin info |
+| `/clogs help` | Show help |
+| `/clogs reload` | Reload config |
+| `/clogs debug <player>` | Diagnose a player's permissions |
+| `/clogs status <player>` | Same as debug |
+| `/clogs op <player>` | Manually mark player as OP |
+| `/clogs unop <player>` | Manually unmark player |
+| `/clogs list` | List all tracked OPs |
 
 ## Build
 
@@ -154,24 +154,24 @@ mvn clean package
 ```
 
 Outputs:
-- `velocity-plugin/target/velocity-logs-velocity-2.2.0.jar`
-- `bungee-plugin/target/velocity-logs-bungee-2.2.0.jar`
-- `spigot-plugin/target/velocity-logs-spigot-2.2.0.jar`
-- `paper-plugin/target/velocity-logs-paper-2.2.0.jar`
+- `velocity-plugin/target/commandlogger-velocity-2.2.0.jar`
+- `bungee-plugin/target/commandlogger-bungee-2.2.0.jar`
+- `spigot-plugin/target/commandlogger-spigot-2.2.0.jar`
+- `paper-plugin/target/commandlogger-paper-2.2.0.jar`
 
 ## Setup
 
 ### 1. Install the proxy plugin
-- **Velocity:** drop `velocity-logs-velocity-2.2.0.jar` into `plugins/`
-- **BungeeCord:** drop `velocity-logs-bungee-2.2.0.jar` into `plugins/`
+- **Velocity:** drop `commandlogger-velocity-2.2.0.jar` into `plugins/`
+- **BungeeCord:** drop `commandlogger-bungee-2.2.0.jar` into `plugins/`
 
 ### 2. Install the backend plugin
-- **Spigot:** drop `velocity-logs-spigot-2.2.0.jar` into `plugins/`
-- **Paper:** drop `velocity-logs-paper-2.2.0.jar` into `plugins/`
+- **Spigot:** drop `commandlogger-spigot-2.2.0.jar` into `plugins/`
+- **Paper:** drop `commandlogger-paper-2.2.0.jar` into `plugins/`
 
 ### 3. Configure
 Make sure `channel` matches on both proxy and backend configs.
-Default: `velocitylogs:main`
+Default: `commandlogger:main`
 
 ### 4. Register the channel (BungeeCord)
 In your BungeeCord `config.yml`, ensure `bungeecord: true` is set on the
@@ -189,10 +189,10 @@ PARENT_POM = """<?xml version="1.0" encoding="UTF-8"?>
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ir.muvixo</groupId>
-    <artifactId>velocity-logs-parent</artifactId>
+    <artifactId>commandlogger-parent</artifactId>
     <version>2.2.0</version>
     <packaging>pom</packaging>
-    <name>VelocityLogs Parent</name>
+    <name>CommandLogger Parent</name>
 
     <modules>
         <module>velocity-plugin</module>
@@ -258,13 +258,13 @@ VELOCITY_POM = """<?xml version="1.0" encoding="UTF-8"?>
 
     <parent>
         <groupId>ir.muvixo</groupId>
-        <artifactId>velocity-logs-parent</artifactId>
+        <artifactId>commandlogger-parent</artifactId>
         <version>2.2.0</version>
     </parent>
 
-    <artifactId>velocity-logs-velocity</artifactId>
+    <artifactId>commandlogger-velocity</artifactId>
     <packaging>jar</packaging>
-    <name>VelocityLogs (Velocity)</name>
+    <name>CommandLogger (Velocity)</name>
 
     <dependencies>
         <dependency>
@@ -335,15 +335,15 @@ VELOCITY_POM = """<?xml version="1.0" encoding="UTF-8"?>
                             <relocations>
                                 <relocation>
                                     <pattern>org.spongepowered.configurate</pattern>
-                                    <shadedPattern>ir.muvixo.logs.libs.configurate</shadedPattern>
+                                    <shadedPattern>ir.muvixo.cmdlogger.libs.configurate</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>io.leangen.geantyref</pattern>
-                                    <shadedPattern>ir.muvixo.logs.libs.geantyref</shadedPattern>
+                                    <shadedPattern>ir.muvixo.cmdlogger.libs.geantyref</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.yaml.snakeyaml</pattern>
-                                    <shadedPattern>ir.muvixo.logs.libs.snakeyaml</shadedPattern>
+                                    <shadedPattern>ir.muvixo.cmdlogger.libs.snakeyaml</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
@@ -356,16 +356,16 @@ VELOCITY_POM = """<?xml version="1.0" encoding="UTF-8"?>
 """
 
 VELOCITY_JSON = """{
-  "id": "velocity-logs",
-  "name": "VelocityLogs",
+  "id": "commandlogger",
+  "name": "CommandLogger",
   "version": "${project.version}",
   "description": "Broadcasts commands from backend Spigot servers to staff",
   "authors": ["muvixo"],
-  "main": "ir.muvixo.logs.velocity.VelocityLogs"
+  "main": "ir.muvixo.cmdlogger.velocity.CommandLogger"
 }
 """
 
-VELOCITY_MAIN = """package ir.muvixo.logs.velocity;
+VELOCITY_MAIN = """package ir.muvixo.cmdlogger.velocity;
 
 import com.google.inject.Inject;
 import com.velocitypowered.api.command.CommandManager;
@@ -383,13 +383,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 @Plugin(
-        id = "velocity-logs",
-        name = "VelocityLogs",
+        id = "commandlogger",
+        name = "CommandLogger",
         version = "2.2.0",
         description = "Broadcasts commands from backend Spigot servers to staff",
         authors = {"muvixo"}
 )
-public class VelocityLogs {
+public class CommandLogger {
 
     private final ProxyServer server;
     private final Logger logger;
@@ -402,7 +402,7 @@ public class VelocityLogs {
     private MinecraftChannelIdentifier channel;
 
     @Inject
-    public VelocityLogs(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
+    public CommandLogger(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
         this.server = server;
         this.logger = logger;
         this.dataDirectory = dataDirectory;
@@ -433,15 +433,15 @@ public class VelocityLogs {
 
         CommandManager cm = server.getCommandManager();
         cm.register(
-                cm.metaBuilder("logs")
-                        .aliases("cmdlogs", "commandlogs", "vlogs")
+                cm.metaBuilder("clogs")
+                        .aliases("cmdlogger", "cmdlogger", "clogs")
                         .plugin(this)
                         .build(),
                 new LogsCommand(server, logger, config, opManager, permissionChecker)
         );
 
         logger.info("===========================================");
-        logger.info("  VelocityLogs v2.2.0 by muvixo");
+        logger.info("  CommandLogger v2.2.0 by muvixo");
         logger.info("  Channel: {}", config.getChannel());
         logger.info("  Visibility: only backend OPs");
         logger.info("  Debug: {}", config.isDebug());
@@ -453,14 +453,14 @@ public class VelocityLogs {
         if (channel != null) {
             try { server.getChannelRegistrar().unregister(channel); } catch (Exception ignored) {}
         }
-        logger.info("VelocityLogs disabled.");
+        logger.info("CommandLogger disabled.");
     }
 
     public Config getConfig() { return config; }
 }
 """
 
-VELOCITY_CONFIG = """package ir.muvixo.logs.velocity;
+VELOCITY_CONFIG = """package ir.muvixo.cmdlogger.velocity;
 
 import org.slf4j.Logger;
 import org.spongepowered.configurate.CommentedConfigurationNode;
@@ -472,7 +472,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Config manager for VelocityLogs v2.2.
+ * Config manager for CommandLogger v2.2.
  *
  * @author muvixo
  */
@@ -517,7 +517,7 @@ public class Config {
             return;
         }
 
-        this.channel = root.node("channel").getString("velocitylogs:main");
+        this.channel = root.node("channel").getString("commandlogger:main");
         this.showToSelf = root.node("show-to-self").getBoolean(false);
         this.logToConsole = root.node("log-to-console").getBoolean(true);
         this.debug = root.node("debug").getBoolean(false);
@@ -531,9 +531,9 @@ public class Config {
                 "&c[!] You don't have permission to do that!");
 
         this.seePermission = root.node("permissions", "see")
-                .getString("velocitylogs.see");
+                .getString("commandlogger.see");
         this.adminPermission = root.node("permissions", "admin")
-                .getString("velocitylogs.admin");
+                .getString("commandlogger.admin");
     }
 
     public String getChannel() { return channel; }
@@ -550,12 +550,12 @@ public class Config {
 """
 
 VELOCITY_CONFIG_YML = """# ============================================================
-#  VelocityLogs v2.2 - Velocity config
+#  CommandLogger v2.2 - Velocity config
 #  Author: muvixo
 # ============================================================
 
 # Plugin messaging channel. MUST match the Spigot/Paper side.
-channel: "velocitylogs:main"
+channel: "commandlogger:main"
 
 # ---------------- Behaviour ----------------
 # Show the command log to the player who typed it? (set true to see your own)
@@ -587,15 +587,15 @@ no-permission-message: "&c[!] You don't have permission to do that!"
 #    3. They have the "admin" permission below.
 #
 #  Grant with LuckPerms (or any perm plugin):
-#    /lp group staff permission set velocitylogs.see   true
-#    /lp group admin permission set velocitylogs.admin true
+#    /lp group staff permission set commandlogger.see   true
+#    /lp group admin permission set commandlogger.admin true
 # ============================================================
 permissions:
-  see:   "velocitylogs.see"
-  admin: "velocitylogs.admin"
+  see:   "commandlogger.see"
+  admin: "commandlogger.admin"
 """
 
-VELOCITY_COLOR_UTIL = """package ir.muvixo.logs.velocity;
+VELOCITY_COLOR_UTIL = """package ir.muvixo.cmdlogger.velocity;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -638,7 +638,7 @@ public final class ColorUtil {
 }
 """
 
-VELOCITY_OP_MANAGER = """package ir.muvixo.logs.velocity;
+VELOCITY_OP_MANAGER = """package ir.muvixo.cmdlogger.velocity;
 
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
@@ -787,7 +787,7 @@ public class OpPlayerManager {
 }
 """
 
-VELOCITY_PERM_CHECKER = """package ir.muvixo.logs.velocity;
+VELOCITY_PERM_CHECKER = """package ir.muvixo.cmdlogger.velocity;
 
 import com.velocitypowered.api.proxy.Player;
 import org.slf4j.Logger;
@@ -847,7 +847,7 @@ public class PermissionChecker {
 }
 """
 
-VELOCITY_BACKEND_RECEIVER = """package ir.muvixo.logs.velocity;
+VELOCITY_BACKEND_RECEIVER = """package ir.muvixo.cmdlogger.velocity;
 
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
@@ -905,10 +905,10 @@ public class BackendMessageReceiver {
             switch (type) {
                 case "OP_STATUS" -> handleOpStatus(in, sourceServer);
                 case "CMD"       -> handleCommand(in, sourceServer);
-                default -> logger.warn("[VelocityLogs] Unknown message type: {}", type);
+                default -> logger.warn("[CommandLogger] Unknown message type: {}", type);
             }
         } catch (Exception e) {
-            logger.warn("[VelocityLogs] Failed to decode plugin message from {}", sourceServer, e);
+            logger.warn("[CommandLogger] Failed to decode plugin message from {}", sourceServer, e);
         }
     }
 
@@ -972,7 +972,7 @@ public class BackendMessageReceiver {
 }
 """
 
-VELOCITY_LOGS_COMMAND = """package ir.muvixo.logs.velocity;
+VELOCITY_LOGS_COMMAND = """package ir.muvixo.cmdlogger.velocity;
 
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
@@ -989,7 +989,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * /logs command with a permission-aware help menu.
+ * /clogs command with a permission-aware help menu.
  *
  * @author muvixo
  */
@@ -1051,7 +1051,7 @@ public class LogsCommand implements SimpleCommand {
             case "op": {
                 if (!canReload(source)) { noPerm(source); return; }
                 if (args.length < 2) {
-                    source.sendMessage(Component.text("Usage: /logs op <player>", NamedTextColor.RED));
+                    source.sendMessage(Component.text("Usage: /clogs op <player>", NamedTextColor.RED));
                     return;
                 }
                 Optional<Player> opt = server.getPlayer(args[1]);
@@ -1067,7 +1067,7 @@ public class LogsCommand implements SimpleCommand {
             case "unop": {
                 if (!canReload(source)) { noPerm(source); return; }
                 if (args.length < 2) {
-                    source.sendMessage(Component.text("Usage: /logs unop <player>", NamedTextColor.RED));
+                    source.sendMessage(Component.text("Usage: /clogs unop <player>", NamedTextColor.RED));
                     return;
                 }
                 Optional<Player> opt = server.getPlayer(args[1]);
@@ -1085,7 +1085,7 @@ public class LogsCommand implements SimpleCommand {
                 if (!canReload(source)) { noPerm(source); return; }
                 if (args.length < 2) {
                     source.sendMessage(Component.text(
-                            "Usage: /logs " + sub + " <player>", NamedTextColor.RED));
+                            "Usage: /clogs " + sub + " <player>", NamedTextColor.RED));
                     return;
                 }
                 Optional<Player> opt = server.getPlayer(args[1]);
@@ -1125,25 +1125,25 @@ public class LogsCommand implements SimpleCommand {
             return;
         }
 
-        header(source, "VelocityLogs - Velocity Commands");
+        header(source, "CommandLogger - Velocity Commands");
 
         source.sendMessage(Component.text("General Commands", NamedTextColor.YELLOW));
-        row(source, "/logs help", "Show this help");
+        row(source, "/clogs help", "Show this help");
 
         if (isUser) {
-            row(source, "/logs info", "Show plugin info");
-            row(source, "/logs creator", "Show plugin credits");
+            row(source, "/clogs info", "Show plugin info");
+            row(source, "/clogs creator", "Show plugin credits");
         }
 
         if (isAdmin) {
             separator(source);
             source.sendMessage(Component.text("Admin Commands", NamedTextColor.RED));
-            row(source, "/logs reload", "Reload config");
-            row(source, "/logs list", "List tracked OPs");
-            row(source, "/logs op <player>", "Manually mark OP");
-            row(source, "/logs unop <player>", "Manually unmark OP");
-            row(source, "/logs debug <player>", "Diagnose player");
-            row(source, "/logs status <player>", "Same as debug");
+            row(source, "/clogs reload", "Reload config");
+            row(source, "/clogs list", "List tracked OPs");
+            row(source, "/clogs op <player>", "Manually mark OP");
+            row(source, "/clogs unop <player>", "Manually unmark OP");
+            row(source, "/clogs debug <player>", "Diagnose player");
+            row(source, "/clogs status <player>", "Same as debug");
         }
 
         separator(source);
@@ -1155,7 +1155,7 @@ public class LogsCommand implements SimpleCommand {
     }
 
     private void sendInfo(CommandSource source) {
-        source.sendMessage(Component.text("VelocityLogs ", NamedTextColor.GOLD)
+        source.sendMessage(Component.text("CommandLogger ", NamedTextColor.GOLD)
                 .append(Component.text("v2.2.0 ", NamedTextColor.YELLOW))
                 .append(Component.text("by muvixo", NamedTextColor.AQUA)));
         source.sendMessage(Component.text("Channel: ", NamedTextColor.GRAY)
@@ -1165,7 +1165,7 @@ public class LogsCommand implements SimpleCommand {
     }
 
     private void sendCreator(CommandSource source) {
-        source.sendMessage(Component.text("VelocityLogs ", NamedTextColor.GOLD)
+        source.sendMessage(Component.text("CommandLogger ", NamedTextColor.GOLD)
                 .append(Component.text("v2.2.0", NamedTextColor.YELLOW)));
         source.sendMessage(Component.text("Author: ", NamedTextColor.GRAY)
                 .append(Component.text("muvixo", NamedTextColor.AQUA)));
@@ -1277,13 +1277,13 @@ BUNGEE_POM = """<?xml version="1.0" encoding="UTF-8"?>
 
     <parent>
         <groupId>ir.muvixo</groupId>
-        <artifactId>velocity-logs-parent</artifactId>
+        <artifactId>commandlogger-parent</artifactId>
         <version>2.2.0</version>
     </parent>
 
-    <artifactId>velocity-logs-bungee</artifactId>
+    <artifactId>commandlogger-bungee</artifactId>
     <packaging>jar</packaging>
-    <name>VelocityLogs (BungeeCord 1.8)</name>
+    <name>CommandLogger (BungeeCord 1.8)</name>
 
     <dependencies>
         <dependency>
@@ -1326,7 +1326,7 @@ BUNGEE_POM = """<?xml version="1.0" encoding="UTF-8"?>
 </project>
 """
 
-BUNGEE_MAIN = """package ir.muvixo.logs.bungee;
+BUNGEE_MAIN = """package ir.muvixo.cmdlogger.bungee;
 
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.plugin.PluginManager;
@@ -1336,14 +1336,14 @@ import net.md_5.bungee.api.ProxyServer;
 import java.util.concurrent.TimeUnit;
 
 /**
- * BungeeLogs v2.2 - Broadcasts commands from backend Spigot/Paper servers
+ * CommandLogger v2.2 - Broadcasts commands from backend Spigot/Paper servers
  * to staff / OP players on the BungeeCord proxy.
  *
  * Full BungeeCord 1.8+ support.
  *
  * @author muvixo
  */
-public class BungeeLogs extends Plugin {
+public class CommandLogger extends Plugin {
 
     private Config config;
     private OpPlayerManager opManager;
@@ -1364,7 +1364,7 @@ public class BungeeLogs extends Plugin {
         getProxy().getPluginManager().registerListener(this, receiver);
         getProxy().registerChannel(config.getChannel());
 
-        BungeeLogsCommand cmd = new BungeeLogsCommand(this, config, opManager, permissionChecker);
+        CommandLoggerCommand cmd = new CommandLoggerCommand(this, config, opManager, permissionChecker);
         getProxy().getPluginManager().registerCommand(this, cmd);
 
         // Periodic OP status sync (safety net)
@@ -1384,7 +1384,7 @@ public class BungeeLogs extends Plugin {
         }
 
         getLogger().info("===========================================");
-        getLogger().info("  BungeeLogs v" + getDescription().getVersion());
+        getLogger().info("  CommandLogger v" + getDescription().getVersion());
         getLogger().info("  Channel: " + config.getChannel());
         getLogger().info("  Report OP: " + config.isReportOpStatus());
         getLogger().info("  Debug: " + config.isDebug());
@@ -1399,12 +1399,12 @@ public class BungeeLogs extends Plugin {
         try {
             getProxy().unregisterChannel(config.getChannel());
         } catch (Exception ignored) {}
-        getLogger().info("BungeeLogs disabled.");
+        getLogger().info("CommandLogger disabled.");
     }
 
     public void reloadAll() {
         config.load();
-        getLogger().info("[BungeeLogs] Config reloaded.");
+        getLogger().info("[CommandLogger] Config reloaded.");
     }
 
     // ============================================================
@@ -1416,7 +1416,7 @@ public class BungeeLogs extends Plugin {
 }
 """
 
-BUNGEE_CONFIG = """package ir.muvixo.logs.bungee;
+BUNGEE_CONFIG = """package ir.muvixo.cmdlogger.bungee;
 
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
@@ -1431,13 +1431,13 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Config wrapper for BungeeLogs v2.2.
+ * Config wrapper for CommandLogger v2.2.
  *
  * @author muvixo
  */
 public class Config {
 
-    private final BungeeLogs plugin;
+    private final CommandLogger plugin;
 
     private String channel;
     private String messageFormat;
@@ -1452,7 +1452,7 @@ public class Config {
     private String seePermission;
     private String adminPermission;
 
-    public Config(BungeeLogs plugin) {
+    public Config(CommandLogger plugin) {
         this.plugin = plugin;
     }
 
@@ -1473,7 +1473,7 @@ public class Config {
 
             Configuration cfg = ConfigurationProvider.getProvider(YamlConfiguration.class).load(file);
 
-            this.channel = cfg.getString("channel", "velocitylogs:main");
+            this.channel = cfg.getString("channel", "commandlogger:main");
             this.showToSelf = cfg.getBoolean("show-to-self", false);
             this.logToConsole = cfg.getBoolean("log-to-console", true);
             this.debug = cfg.getBoolean("debug", false);
@@ -1488,8 +1488,8 @@ public class Config {
             this.noPermissionMessage = cfg.getString("no-permission-message",
                     "&c[!] You don't have permission to do that!");
 
-            this.seePermission = cfg.getString("permissions.see", "velocitylogs.see");
-            this.adminPermission = cfg.getString("permissions.admin", "velocitylogs.admin");
+            this.seePermission = cfg.getString("permissions.see", "commandlogger.see");
+            this.adminPermission = cfg.getString("permissions.admin", "commandlogger.admin");
 
         } catch (IOException e) {
             plugin.getLogger().severe("Could not load config.yml: " + e.getMessage());
@@ -1512,12 +1512,12 @@ public class Config {
 """
 
 BUNGEE_CONFIG_YML = """# ============================================================
-#  BungeeLogs v2.2 - BungeeCord config
+#  CommandLogger v2.2 - BungeeCord config
 #  Author: muvixo
 # ============================================================
 
 # Plugin messaging channel. MUST match the Spigot/Paper side.
-channel: "velocitylogs:main"
+channel: "commandlogger:main"
 
 # ---------------- Behaviour ----------------
 # Show the command log to the player who typed it?
@@ -1556,28 +1556,28 @@ no-permission-message: "&c[!] You don't have permission to do that!"
 #    3. They have the "admin" permission below.
 #
 #  Grant with LuckPerms (or any perm plugin):
-#    /lp group staff permission set velocitylogs.see   true
-#    /lp group admin permission set velocitylogs.admin true
+#    /lp group staff permission set commandlogger.see   true
+#    /lp group admin permission set commandlogger.admin true
 # ============================================================
 permissions:
-  see:   "velocitylogs.see"
-  admin: "velocitylogs.admin"
+  see:   "commandlogger.see"
+  admin: "commandlogger.admin"
 """
 
-BUNGEE_PLUGIN_YML = """name: BungeeLogs
-main: ir.muvixo.logs.bungee.BungeeLogs
+BUNGEE_PLUGIN_YML = """name: CommandLogger
+main: ir.muvixo.cmdlogger.bungee.CommandLogger
 version: ${project.version}
 author: muvixo
 description: Forwards every command executed by players to BungeeCord staff
 
 commands:
   logs:
-    description: BungeeLogs main command
-    usage: /logs help
-    aliases: [vlogs, bungeelogs, cmdlogs, commandlogs]
+    description: CommandLogger main command
+    usage: /clogs help
+    aliases: [vlogs, commandlogger, cmdlogs, commandlogs]
 """
 
-BUNGEE_OP_MANAGER = """package ir.muvixo.logs.bungee;
+BUNGEE_OP_MANAGER = """package ir.muvixo.cmdlogger.bungee;
 
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
@@ -1615,12 +1615,12 @@ public class OpPlayerManager implements Listener {
         }
     }
 
-    private final BungeeLogs plugin;
+    private final CommandLogger plugin;
     private final Config config;
     private final Map<UUID, OpRecord> opPlayers = new ConcurrentHashMap<UUID, OpRecord>();
     private final Map<String, UUID> nameIndex = new ConcurrentHashMap<String, UUID>();
 
-    public OpPlayerManager(BungeeLogs plugin, Config config) {
+    public OpPlayerManager(CommandLogger plugin, Config config) {
         this.plugin = plugin;
         this.config = config;
     }
@@ -1722,7 +1722,7 @@ public class OpPlayerManager implements Listener {
 }
 """
 
-BUNGEE_PERM_CHECKER = """package ir.muvixo.logs.bungee;
+BUNGEE_PERM_CHECKER = """package ir.muvixo.cmdlogger.bungee;
 
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
@@ -1736,7 +1736,7 @@ public class PermissionChecker {
     private final Config config;
     private final OpPlayerManager opManager;
 
-    public PermissionChecker(Config config, OpPlayerManager opManager, BungeeLogs plugin) {
+    public PermissionChecker(Config config, OpPlayerManager opManager, CommandLogger plugin) {
         this.config = config;
         this.opManager = opManager;
     }
@@ -1779,7 +1779,7 @@ public class PermissionChecker {
 }
 """
 
-BUNGEE_BACKEND_RECEIVER = """package ir.muvixo.logs.bungee;
+BUNGEE_BACKEND_RECEIVER = """package ir.muvixo.cmdlogger.bungee;
 
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
@@ -1804,12 +1804,12 @@ public class BackendMessageReceiver implements Listener {
 
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss");
 
-    private final BungeeLogs plugin;
+    private final CommandLogger plugin;
     private final Config config;
     private final OpPlayerManager opManager;
     private final PermissionChecker permChecker;
 
-    public BackendMessageReceiver(BungeeLogs plugin, Config config,
+    public BackendMessageReceiver(CommandLogger plugin, Config config,
                                   OpPlayerManager opManager, PermissionChecker permChecker) {
         this.plugin = plugin;
         this.config = config;
@@ -1836,10 +1836,10 @@ public class BackendMessageReceiver implements Listener {
             } else if ("CMD".equals(type)) {
                 handleCommand(in, sourceServer);
             } else {
-                plugin.getLogger().warning("[BungeeLogs] Unknown message type: " + type);
+                plugin.getLogger().warning("[CommandLogger] Unknown message type: " + type);
             }
         } catch (Exception e) {
-            plugin.getLogger().warning("[BungeeLogs] Failed to decode plugin message from "
+            plugin.getLogger().warning("[CommandLogger] Failed to decode plugin message from "
                     + sourceServer + ": " + e.getMessage());
         }
     }
@@ -1906,7 +1906,7 @@ public class BackendMessageReceiver implements Listener {
 }
 """
 
-BUNGEE_LOGS_COMMAND = """package ir.muvixo.logs.bungee;
+BUNGEE_LOGS_COMMAND = """package ir.muvixo.cmdlogger.bungee;
 
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
@@ -1921,20 +1921,20 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * /logs command for BungeeCord with a permission-aware help menu.
+ * /clogs command for BungeeCord with a permission-aware help menu.
  *
  * @author muvixo
  */
-public class BungeeLogsCommand extends Command implements TabExecutor {
+public class CommandLoggerCommand extends Command implements TabExecutor {
 
-    private final BungeeLogs plugin;
+    private final CommandLogger plugin;
     private final Config config;
     private final OpPlayerManager opManager;
     private final PermissionChecker permChecker;
 
-    public BungeeLogsCommand(BungeeLogs plugin, Config config,
+    public CommandLoggerCommand(CommandLogger plugin, Config config,
                              OpPlayerManager opManager, PermissionChecker permChecker) {
-        super("logs", null, "vlogs", "bungeelogs", "cmdlogs", "commandlogs");
+        super("clogs", null, "clogs", "commandlogger", "cmdlogger", "cmdlogger");
         this.plugin = plugin;
         this.config = config;
         this.opManager = opManager;
@@ -1981,7 +1981,7 @@ public class BungeeLogsCommand extends Command implements TabExecutor {
         if (sub.equals("op")) {
             if (!canReload(sender)) { noPerm(sender); return; }
             if (args.length < 2) {
-                sender.sendMessage(new TextComponent(ChatColor.RED + "Usage: /logs op <player>"));
+                sender.sendMessage(new TextComponent(ChatColor.RED + "Usage: /clogs op <player>"));
                 return;
             }
             ProxiedPlayer target = plugin.getProxy().getPlayer(args[1]);
@@ -1997,7 +1997,7 @@ public class BungeeLogsCommand extends Command implements TabExecutor {
         if (sub.equals("unop")) {
             if (!canReload(sender)) { noPerm(sender); return; }
             if (args.length < 2) {
-                sender.sendMessage(new TextComponent(ChatColor.RED + "Usage: /logs unop <player>"));
+                sender.sendMessage(new TextComponent(ChatColor.RED + "Usage: /clogs unop <player>"));
                 return;
             }
             ProxiedPlayer target = plugin.getProxy().getPlayer(args[1]);
@@ -2014,7 +2014,7 @@ public class BungeeLogsCommand extends Command implements TabExecutor {
             if (!canReload(sender)) { noPerm(sender); return; }
             if (args.length < 2) {
                 sender.sendMessage(new TextComponent(ChatColor.RED
-                        + "Usage: /logs " + sub + " <player>"));
+                        + "Usage: /clogs " + sub + " <player>"));
                 return;
             }
             ProxiedPlayer target = plugin.getProxy().getPlayer(args[1]);
@@ -2052,25 +2052,25 @@ public class BungeeLogsCommand extends Command implements TabExecutor {
             return;
         }
 
-        header(sender, "BungeeLogs - BungeeCord Commands");
+        header(sender, "CommandLogger - BungeeCord Commands");
 
         sender.sendMessage(new TextComponent(ChatColor.YELLOW + "General Commands"));
-        row(sender, "/logs help", "Show this help");
+        row(sender, "/clogs help", "Show this help");
 
         if (isUser) {
-            row(sender, "/logs info", "Show plugin info");
-            row(sender, "/logs creator", "Show plugin credits");
+            row(sender, "/clogs info", "Show plugin info");
+            row(sender, "/clogs creator", "Show plugin credits");
         }
 
         if (isAdmin) {
             separator(sender);
             sender.sendMessage(new TextComponent(ChatColor.RED + "Admin Commands"));
-            row(sender, "/logs reload", "Reload config");
-            row(sender, "/logs list", "List tracked OPs");
-            row(sender, "/logs op <player>", "Manually mark OP");
-            row(sender, "/logs unop <player>", "Manually unmark OP");
-            row(sender, "/logs debug <player>", "Diagnose player");
-            row(sender, "/logs status <player>", "Same as debug");
+            row(sender, "/clogs reload", "Reload config");
+            row(sender, "/clogs list", "List tracked OPs");
+            row(sender, "/clogs op <player>", "Manually mark OP");
+            row(sender, "/clogs unop <player>", "Manually unmark OP");
+            row(sender, "/clogs debug <player>", "Diagnose player");
+            row(sender, "/clogs status <player>", "Same as debug");
         }
 
         separator(sender);
@@ -2082,7 +2082,7 @@ public class BungeeLogsCommand extends Command implements TabExecutor {
     }
 
     private void sendInfo(CommandSender sender) {
-        sender.sendMessage(new TextComponent(ChatColor.GOLD + "BungeeLogs "
+        sender.sendMessage(new TextComponent(ChatColor.GOLD + "CommandLogger "
                 + ChatColor.YELLOW + "v" + plugin.getDescription().getVersion()
                 + ChatColor.AQUA + " by muvixo"));
         sender.sendMessage(new TextComponent(ChatColor.GRAY + "Channel: "
@@ -2092,7 +2092,7 @@ public class BungeeLogsCommand extends Command implements TabExecutor {
     }
 
     private void sendCreator(CommandSender sender) {
-        sender.sendMessage(new TextComponent(ChatColor.GOLD + "BungeeLogs "
+        sender.sendMessage(new TextComponent(ChatColor.GOLD + "CommandLogger "
                 + ChatColor.YELLOW + "v" + plugin.getDescription().getVersion()));
         sender.sendMessage(new TextComponent(ChatColor.GRAY + "Author: "
                 + ChatColor.AQUA + "muvixo"));
@@ -2199,13 +2199,13 @@ SPIGOT_POM = """<?xml version="1.0" encoding="UTF-8"?>
 
     <parent>
         <groupId>ir.muvixo</groupId>
-        <artifactId>velocity-logs-parent</artifactId>
+        <artifactId>commandlogger-parent</artifactId>
         <version>2.2.0</version>
     </parent>
 
-    <artifactId>velocity-logs-spigot</artifactId>
+    <artifactId>commandlogger-spigot</artifactId>
     <packaging>jar</packaging>
-    <name>VelocityLogs (Spigot 1.8)</name>
+    <name>CommandLogger (Spigot 1.8)</name>
 
     <dependencies>
         <dependency>
@@ -2254,7 +2254,7 @@ SPIGOT_POM = """<?xml version="1.0" encoding="UTF-8"?>
 </project>
 """
 
-SPIGOT_MAIN = """package ir.muvixo.logs.spigot;
+SPIGOT_MAIN = """package ir.muvixo.cmdlogger.spigot;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
@@ -2262,12 +2262,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
- * SpigotLogs v2.2 - forwards every command to the proxy.
+ * CommandLogger v2.2 - forwards every command to the proxy.
  * Works on Minecraft 1.8.8 / 1.8.9.
  *
  * @author muvixo
  */
-public class SpigotLogs extends JavaPlugin {
+public class CommandLogger extends JavaPlugin {
 
     private Config config;
 
@@ -2284,9 +2284,9 @@ public class SpigotLogs extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new CommandInterceptor(this, config), this);
 
         VLogsCommand cmd = new VLogsCommand(this, config);
-        if (getCommand("vlogs") != null) {
-            getCommand("vlogs").setExecutor(cmd);
-            getCommand("vlogs").setTabCompleter(cmd);
+        if (getCommand("clogs") != null) {
+            getCommand("clogs").setExecutor(cmd);
+            getCommand("clogs").setTabCompleter(cmd);
         }
 
         long intervalTicks = config.getOpStatusIntervalMinutes() * 60L * 20L;
@@ -2302,7 +2302,7 @@ public class SpigotLogs extends JavaPlugin {
         }
 
         getLogger().info("===========================================");
-        getLogger().info("  VelocityLogs-Spigot v" + getDescription().getVersion());
+        getLogger().info("  CommandLogger-Spigot v" + getDescription().getVersion());
         getLogger().info("  Channel: " + config.getChannel());
         getLogger().info("  Server name: " + config.getServerName());
         getLogger().info("  Report OP: " + config.isReportOpStatus());
@@ -2314,13 +2314,13 @@ public class SpigotLogs extends JavaPlugin {
         try {
             getServer().getMessenger().unregisterOutgoingPluginChannel(this);
         } catch (Exception ignored) {}
-        getLogger().info("VelocityLogs-Spigot disabled.");
+        getLogger().info("CommandLogger-Spigot disabled.");
     }
 
     public void reloadAll() {
         reloadConfig();
         this.config.load();
-        getLogger().info("[VelocityLogs] Config reloaded.");
+        getLogger().info("[CommandLogger] Config reloaded.");
     }
 
     public void sendOpStatus(Player player, boolean isOp) {
@@ -2345,7 +2345,7 @@ public class SpigotLogs extends JavaPlugin {
 }
 """
 
-SPIGOT_CONFIG = """package ir.muvixo.logs.spigot;
+SPIGOT_CONFIG = """package ir.muvixo.cmdlogger.spigot;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -2355,13 +2355,13 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
- * Config wrapper for SpigotLogs v2.2.
+ * Config wrapper for CommandLogger v2.2.
  *
  * @author muvixo
  */
 public class Config {
 
-    private final SpigotLogs plugin;
+    private final CommandLogger plugin;
 
     private String channel;
     private String serverName;
@@ -2371,7 +2371,7 @@ public class Config {
     private List<String> blacklist;
     private List<String> ignoredPlayers;
 
-    public Config(SpigotLogs plugin) {
+    public Config(CommandLogger plugin) {
         this.plugin = plugin;
     }
 
@@ -2379,7 +2379,7 @@ public class Config {
         plugin.reloadConfig();
         FileConfiguration cfg = plugin.getConfig();
 
-        this.channel = cfg.getString("channel", "velocitylogs:main");
+        this.channel = cfg.getString("channel", "commandlogger:main");
         this.logOps = cfg.getBoolean("log-ops", true);
         this.reportOpStatus = cfg.getBoolean("report-op-status", true);
         this.opStatusIntervalMinutes = cfg.getInt("op-status-interval-minutes", 5);
@@ -2429,7 +2429,7 @@ public class Config {
 }
 """
 
-SPIGOT_INTERCEPTOR = """package ir.muvixo.logs.spigot;
+SPIGOT_INTERCEPTOR = """package ir.muvixo.cmdlogger.spigot;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
@@ -2448,10 +2448,10 @@ import org.bukkit.event.player.PlayerQuitEvent;
  */
 public class CommandInterceptor implements Listener {
 
-    private final SpigotLogs plugin;
+    private final CommandLogger plugin;
     private final Config config;
 
-    public CommandInterceptor(SpigotLogs plugin, Config config) {
+    public CommandInterceptor(CommandLogger plugin, Config config) {
         this.plugin = plugin;
         this.config = config;
     }
@@ -2499,7 +2499,7 @@ public class CommandInterceptor implements Listener {
         if (command.isEmpty()) return;
 
         String base = command.split(" ", 2)[0].toLowerCase();
-        if (base.equals("vlogs") || base.equals("velogs") || base.equals("velocitylogs")) return;
+        if (base.equals("clogs") || base.equals("clog") || base.equals("commandlogger")) return;
 
         if (config.isBlacklisted(command)) return;
 
@@ -2524,7 +2524,7 @@ public class CommandInterceptor implements Listener {
 }
 """
 
-SPIGOT_VLOGS_CMD = """package ir.muvixo.logs.spigot;
+SPIGOT_VLOGS_CMD = """package ir.muvixo.cmdlogger.spigot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -2536,16 +2536,16 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 
 /**
- * /vlogs - Spigot side command with a permission-aware help menu.
+ * /clogs - Spigot side command with a permission-aware help menu.
  *
  * @author muvixo
  */
 public class VLogsCommand implements CommandExecutor, TabCompleter {
 
-    private final SpigotLogs plugin;
+    private final CommandLogger plugin;
     private final Config config;
 
-    public VLogsCommand(SpigotLogs plugin, Config config) {
+    public VLogsCommand(CommandLogger plugin, Config config) {
         this.plugin = plugin;
         this.config = config;
     }
@@ -2567,7 +2567,7 @@ public class VLogsCommand implements CommandExecutor, TabCompleter {
         }
 
         if (sub.equals("creator") || sub.equals("author")) {
-            if (!sender.hasPermission(getPerm("creator", "velocitylogs.creator"))) {
+            if (!sender.hasPermission(getPerm("creator", "commandlogger.creator"))) {
                 noPerm(sender); return true;
             }
             sendCreator(sender);
@@ -2575,7 +2575,7 @@ public class VLogsCommand implements CommandExecutor, TabCompleter {
         }
 
         if (sub.equals("info")) {
-            if (!sender.hasPermission(getPerm("use", "velocitylogs.use"))) {
+            if (!sender.hasPermission(getPerm("use", "commandlogger.use"))) {
                 noPerm(sender); return true;
             }
             sendInfo(sender);
@@ -2583,7 +2583,7 @@ public class VLogsCommand implements CommandExecutor, TabCompleter {
         }
 
         if (sub.equals("status")) {
-            if (!sender.hasPermission(getPerm("status", "velocitylogs.status"))) {
+            if (!sender.hasPermission(getPerm("status", "commandlogger.status"))) {
                 noPerm(sender); return true;
             }
             sendStatus(sender);
@@ -2591,7 +2591,7 @@ public class VLogsCommand implements CommandExecutor, TabCompleter {
         }
 
         if (sub.equals("reload")) {
-            if (!sender.hasPermission(getPerm("reload", "velocitylogs.reload"))) {
+            if (!sender.hasPermission(getPerm("reload", "commandlogger.reload"))) {
                 noPerm(sender); return true;
             }
             plugin.reloadAll();
@@ -2600,7 +2600,7 @@ public class VLogsCommand implements CommandExecutor, TabCompleter {
         }
 
         if (sub.equals("toggle")) {
-            if (!sender.hasPermission(getPerm("toggle", "velocitylogs.toggle"))) {
+            if (!sender.hasPermission(getPerm("toggle", "commandlogger.toggle"))) {
                 noPerm(sender); return true;
             }
             boolean now = !plugin.isForwardingEnabled();
@@ -2612,7 +2612,7 @@ public class VLogsCommand implements CommandExecutor, TabCompleter {
         }
 
         if (sub.equals("debug")) {
-            if (!sender.hasPermission(getPerm("debug", "velocitylogs.debug"))) {
+            if (!sender.hasPermission(getPerm("debug", "commandlogger.debug"))) {
                 noPerm(sender); return true;
             }
             boolean now = !plugin.isDebugEnabled();
@@ -2623,7 +2623,7 @@ public class VLogsCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        sender.sendMessage(colorize("&cUnknown subcommand. Use &e/vlogs help"));
+        sender.sendMessage(colorize("&cUnknown subcommand. Use &e/clogs help"));
         return true;
     }
 
@@ -2636,13 +2636,13 @@ public class VLogsCommand implements CommandExecutor, TabCompleter {
     }
 
     private void sendHelp(CommandSender sender) {
-        String permUse     = getPerm("use",     "velocitylogs.use");
-        String permCreator = getPerm("creator", "velocitylogs.creator");
-        String permAdmin   = getPerm("admin",   "velocitylogs.admin");
-        String permReload  = getPerm("reload",  "velocitylogs.reload");
-        String permStatus  = getPerm("status",  "velocitylogs.status");
-        String permToggle  = getPerm("toggle",  "velocitylogs.toggle");
-        String permDebug   = getPerm("debug",   "velocitylogs.debug");
+        String permUse     = getPerm("use",     "commandlogger.use");
+        String permCreator = getPerm("creator", "commandlogger.creator");
+        String permAdmin   = getPerm("admin",   "commandlogger.admin");
+        String permReload  = getPerm("reload",  "commandlogger.reload");
+        String permStatus  = getPerm("status",  "commandlogger.status");
+        String permToggle  = getPerm("toggle",  "commandlogger.toggle");
+        String permDebug   = getPerm("debug",   "commandlogger.debug");
 
         boolean isAdmin =
                 sender.hasPermission(permAdmin)
@@ -2661,17 +2661,17 @@ public class VLogsCommand implements CommandExecutor, TabCompleter {
         }
 
         sender.sendMessage(colorize("&8&m----------------------------------"));
-        sender.sendMessage(colorize("&6&lVelocityLogs &7- &eSpigot Commands"));
+        sender.sendMessage(colorize("&6&lCommandLogger &7- &eSpigot Commands"));
         sender.sendMessage(colorize("&8&m----------------------------------"));
 
         sender.sendMessage(colorize("&e&lGeneral Commands"));
-        sender.sendMessage(colorize("  &6/vlogs help &8- &7Show this help"));
+        sender.sendMessage(colorize("  &6/clogs help &8- &7Show this help"));
 
         if (sender.hasPermission(permCreator)) {
-            sender.sendMessage(colorize("  &6/vlogs creator &8- &7Show plugin credits"));
+            sender.sendMessage(colorize("  &6/clogs creator &8- &7Show plugin credits"));
         }
         if (sender.hasPermission(permUse)) {
-            sender.sendMessage(colorize("  &6/vlogs info &8- &7Show plugin info"));
+            sender.sendMessage(colorize("  &6/clogs info &8- &7Show plugin info"));
         }
 
         if (isAdmin) {
@@ -2679,16 +2679,16 @@ public class VLogsCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(colorize("&c&lAdmin Commands"));
 
             if (sender.hasPermission(permStatus)) {
-                sender.sendMessage(colorize("  &6/vlogs status &8- &7Show plugin status"));
+                sender.sendMessage(colorize("  &6/clogs status &8- &7Show plugin status"));
             }
             if (sender.hasPermission(permToggle)) {
-                sender.sendMessage(colorize("  &6/vlogs toggle &8- &7Toggle command forwarding"));
+                sender.sendMessage(colorize("  &6/clogs toggle &8- &7Toggle command forwarding"));
             }
             if (sender.hasPermission(permDebug)) {
-                sender.sendMessage(colorize("  &6/vlogs debug &8- &7Toggle debug mode"));
+                sender.sendMessage(colorize("  &6/clogs debug &8- &7Toggle debug mode"));
             }
             if (sender.hasPermission(permReload)) {
-                sender.sendMessage(colorize("  &6/vlogs reload &8- &7Reload configuration"));
+                sender.sendMessage(colorize("  &6/clogs reload &8- &7Reload configuration"));
             }
         }
 
@@ -2700,7 +2700,7 @@ public class VLogsCommand implements CommandExecutor, TabCompleter {
 
     private void sendCreator(CommandSender sender) {
         sender.sendMessage(colorize("&8&m----------------------------------"));
-        sender.sendMessage(colorize("&6&lVelocityLogs-Spigot"));
+        sender.sendMessage(colorize("&6&lCommandLogger-Spigot"));
         sender.sendMessage(colorize("&7Author: &bmuvixo"));
         sender.sendMessage(colorize("&7Version: &f" + plugin.getDescription().getVersion()));
         sender.sendMessage(colorize("&7API: &fSpigot 1.8.8"));
@@ -2709,7 +2709,7 @@ public class VLogsCommand implements CommandExecutor, TabCompleter {
 
     private void sendInfo(CommandSender sender) {
         sender.sendMessage(colorize("&8&m----------------------------------"));
-        sender.sendMessage(colorize("&6&lVelocityLogs &7- &eInfo"));
+        sender.sendMessage(colorize("&6&lCommandLogger &7- &eInfo"));
         sender.sendMessage(colorize("&7Channel: &e" + config.getChannel()));
         sender.sendMessage(colorize("&7Server name: &e" + config.getServerName()));
         sender.sendMessage(colorize("&7Log OPs: &e" + config.isLogOps()));
@@ -2719,7 +2719,7 @@ public class VLogsCommand implements CommandExecutor, TabCompleter {
 
     private void sendStatus(CommandSender sender) {
         sender.sendMessage(colorize("&8&m----------------------------------"));
-        sender.sendMessage(colorize("&6&lVelocityLogs &7- &eStatus"));
+        sender.sendMessage(colorize("&6&lCommandLogger &7- &eStatus"));
         sender.sendMessage(colorize("&7Forwarding: "
                 + (plugin.isForwardingEnabled() ? "&aENABLED" : "&cDISABLED")));
         sender.sendMessage(colorize("&7Debug: "
@@ -2743,15 +2743,15 @@ public class VLogsCommand implements CommandExecutor, TabCompleter {
             List<String> subs = new ArrayList<String>();
 
             boolean isAdmin =
-                    sender.hasPermission(getPerm("admin",  "velocitylogs.admin"))
-                 || sender.hasPermission(getPerm("reload", "velocitylogs.reload"))
-                 || sender.hasPermission(getPerm("status", "velocitylogs.status"))
-                 || sender.hasPermission(getPerm("toggle", "velocitylogs.toggle"))
-                 || sender.hasPermission(getPerm("debug",  "velocitylogs.debug"));
+                    sender.hasPermission(getPerm("admin",  "commandlogger.admin"))
+                 || sender.hasPermission(getPerm("reload", "commandlogger.reload"))
+                 || sender.hasPermission(getPerm("status", "commandlogger.status"))
+                 || sender.hasPermission(getPerm("toggle", "commandlogger.toggle"))
+                 || sender.hasPermission(getPerm("debug",  "commandlogger.debug"));
 
             boolean isUser =
-                    sender.hasPermission(getPerm("use",     "velocitylogs.use"))
-                 || sender.hasPermission(getPerm("creator", "velocitylogs.creator"));
+                    sender.hasPermission(getPerm("use",     "commandlogger.use"))
+                 || sender.hasPermission(getPerm("creator", "commandlogger.creator"));
 
             if (!isAdmin && !isUser) {
                 return out;
@@ -2759,12 +2759,12 @@ public class VLogsCommand implements CommandExecutor, TabCompleter {
 
             subs.add("help");
 
-            if (sender.hasPermission(getPerm("creator", "velocitylogs.creator"))) subs.add("creator");
-            if (sender.hasPermission(getPerm("use",     "velocitylogs.use")))     subs.add("info");
-            if (sender.hasPermission(getPerm("status",  "velocitylogs.status")))  subs.add("status");
-            if (sender.hasPermission(getPerm("toggle",  "velocitylogs.toggle")))  subs.add("toggle");
-            if (sender.hasPermission(getPerm("debug",   "velocitylogs.debug")))   subs.add("debug");
-            if (sender.hasPermission(getPerm("reload",  "velocitylogs.reload")))  subs.add("reload");
+            if (sender.hasPermission(getPerm("creator", "commandlogger.creator"))) subs.add("creator");
+            if (sender.hasPermission(getPerm("use",     "commandlogger.use")))     subs.add("info");
+            if (sender.hasPermission(getPerm("status",  "commandlogger.status")))  subs.add("status");
+            if (sender.hasPermission(getPerm("toggle",  "commandlogger.toggle")))  subs.add("toggle");
+            if (sender.hasPermission(getPerm("debug",   "commandlogger.debug")))   subs.add("debug");
+            if (sender.hasPermission(getPerm("reload",  "commandlogger.reload")))  subs.add("reload");
 
             String partial = args[0].toLowerCase();
             for (String s : subs) if (s.startsWith(partial)) out.add(s);
@@ -2780,12 +2780,12 @@ public class VLogsCommand implements CommandExecutor, TabCompleter {
 """
 
 SPIGOT_CONFIG_YML = """# ============================================================
-#  VelocityLogs-Spigot v2.2 - backend config
+#  CommandLogger-Spigot v2.2 - backend config
 #  Author: muvixo
 # ============================================================
 
 # Plugin messaging channel. MUST match the proxy side.
-channel: "velocitylogs:main"
+channel: "commandlogger:main"
 
 # Name of this backend server.
 # Leave empty to auto-detect.
@@ -2813,48 +2813,48 @@ ignored-players: []
 #  Permission Nodes
 # ============================================================
 permissions:
-  use:      "velocitylogs.use"
-  creator:  "velocitylogs.creator"
+  use:      "commandlogger.use"
+  creator:  "commandlogger.creator"
 
-  admin:    "velocitylogs.admin"
-  reload:   "velocitylogs.reload"
-  status:   "velocitylogs.status"
-  toggle:   "velocitylogs.toggle"
-  debug:    "velocitylogs.debug"
+  admin:    "commandlogger.admin"
+  reload:   "commandlogger.reload"
+  status:   "commandlogger.status"
+  toggle:   "commandlogger.toggle"
+  debug:    "commandlogger.debug"
 """
 
-SPIGOT_PLUGIN_YML = """name: VelocityLogs-Spigot
-main: ir.muvixo.logs.spigot.SpigotLogs
+SPIGOT_PLUGIN_YML = """name: CommandLogger-Spigot
+main: ir.muvixo.cmdlogger.spigot.CommandLogger
 version: ${project.version}
 author: muvixo
 description: Forwards every command executed by players to the proxy
 
 commands:
   vlogs:
-    description: VelocityLogs Spigot helper command
-    usage: /vlogs help
-    aliases: [velogs, velocitylogs]
+    description: CommandLogger Spigot helper command
+    usage: /clogs help
+    aliases: [velogs, commandlogger]
 
 permissions:
-  velocitylogs.use:
-    description: Access to /vlogs info
+  commandlogger.use:
+    description: Access to /clogs info
     default: op
-  velocitylogs.creator:
+  commandlogger.creator:
     description: See plugin credits
     default: op
-  velocitylogs.admin:
+  commandlogger.admin:
     description: Full admin access
     default: op
-  velocitylogs.reload:
+  commandlogger.reload:
     description: Reload config
     default: op
-  velocitylogs.status:
+  commandlogger.status:
     description: Show plugin status
     default: op
-  velocitylogs.toggle:
+  commandlogger.toggle:
     description: Toggle command forwarding on/off
     default: op
-  velocitylogs.debug:
+  commandlogger.debug:
     description: Toggle debug mode
     default: op
 """
@@ -2868,13 +2868,13 @@ PAPER_POM = """<?xml version="1.0" encoding="UTF-8"?>
 
     <parent>
         <groupId>ir.muvixo</groupId>
-        <artifactId>velocity-logs-parent</artifactId>
+        <artifactId>commandlogger-parent</artifactId>
         <version>2.2.0</version>
     </parent>
 
-    <artifactId>velocity-logs-paper</artifactId>
+    <artifactId>commandlogger-paper</artifactId>
     <packaging>jar</packaging>
-    <name>VelocityLogs (Paper 1.8+)</name>
+    <name>CommandLogger (Paper 1.8+)</name>
 
     <dependencies>
         <dependency>
@@ -2917,7 +2917,7 @@ PAPER_POM = """<?xml version="1.0" encoding="UTF-8"?>
 </project>
 """
 
-PAPER_MAIN = """package ir.muvixo.logs.paper;
+PAPER_MAIN = """package ir.muvixo.cmdlogger.paper;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
@@ -2925,12 +2925,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
- * PaperLogs v2.2 - forwards every command to the proxy.
+ * CommandLogger v2.2 - forwards every command to the proxy.
  * Works on Paper 1.8.8+.
  *
  * @author muvixo
  */
-public class PaperLogs extends JavaPlugin {
+public class CommandLogger extends JavaPlugin {
 
     private Config config;
 
@@ -2947,9 +2947,9 @@ public class PaperLogs extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new CommandInterceptor(this, config), this);
 
         PaperVLogsCommand cmd = new PaperVLogsCommand(this, config);
-        if (getCommand("vlogs") != null) {
-            getCommand("vlogs").setExecutor(cmd);
-            getCommand("vlogs").setTabCompleter(cmd);
+        if (getCommand("clogs") != null) {
+            getCommand("clogs").setExecutor(cmd);
+            getCommand("clogs").setTabCompleter(cmd);
         }
 
         long intervalTicks = config.getOpStatusIntervalMinutes() * 60L * 20L;
@@ -2965,7 +2965,7 @@ public class PaperLogs extends JavaPlugin {
         }
 
         getLogger().info("===========================================");
-        getLogger().info("  VelocityLogs-Paper v" + getDescription().getVersion());
+        getLogger().info("  CommandLogger-Paper v" + getDescription().getVersion());
         getLogger().info("  Channel: " + config.getChannel());
         getLogger().info("  Server name: " + config.getServerName());
         getLogger().info("===========================================");
@@ -2976,13 +2976,13 @@ public class PaperLogs extends JavaPlugin {
         try {
             getServer().getMessenger().unregisterOutgoingPluginChannel(this);
         } catch (Exception ignored) {}
-        getLogger().info("VelocityLogs-Paper disabled.");
+        getLogger().info("CommandLogger-Paper disabled.");
     }
 
     public void reloadAll() {
         reloadConfig();
         this.config.load();
-        getLogger().info("[VelocityLogs] Config reloaded.");
+        getLogger().info("[CommandLogger] Config reloaded.");
     }
 
     public void sendOpStatus(Player player, boolean isOp) {
@@ -3007,7 +3007,7 @@ public class PaperLogs extends JavaPlugin {
 }
 """
 
-PAPER_CONFIG = """package ir.muvixo.logs.paper;
+PAPER_CONFIG = """package ir.muvixo.cmdlogger.paper;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -3017,13 +3017,13 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
- * Config wrapper for PaperLogs v2.2.
+ * Config wrapper for CommandLogger v2.2.
  *
  * @author muvixo
  */
 public class Config {
 
-    private final PaperLogs plugin;
+    private final CommandLogger plugin;
 
     private String channel;
     private String serverName;
@@ -3033,7 +3033,7 @@ public class Config {
     private List<String> blacklist;
     private List<String> ignoredPlayers;
 
-    public Config(PaperLogs plugin) {
+    public Config(CommandLogger plugin) {
         this.plugin = plugin;
     }
 
@@ -3041,7 +3041,7 @@ public class Config {
         plugin.reloadConfig();
         FileConfiguration cfg = plugin.getConfig();
 
-        this.channel = cfg.getString("channel", "velocitylogs:main");
+        this.channel = cfg.getString("channel", "commandlogger:main");
         this.logOps = cfg.getBoolean("log-ops", true);
         this.reportOpStatus = cfg.getBoolean("report-op-status", true);
         this.opStatusIntervalMinutes = cfg.getInt("op-status-interval-minutes", 5);
@@ -3091,7 +3091,7 @@ public class Config {
 }
 """
 
-PAPER_INTERCEPTOR = """package ir.muvixo.logs.paper;
+PAPER_INTERCEPTOR = """package ir.muvixo.cmdlogger.paper;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
@@ -3110,10 +3110,10 @@ import org.bukkit.event.player.PlayerQuitEvent;
  */
 public class CommandInterceptor implements Listener {
 
-    private final PaperLogs plugin;
+    private final CommandLogger plugin;
     private final Config config;
 
-    public CommandInterceptor(PaperLogs plugin, Config config) {
+    public CommandInterceptor(CommandLogger plugin, Config config) {
         this.plugin = plugin;
         this.config = config;
     }
@@ -3161,7 +3161,7 @@ public class CommandInterceptor implements Listener {
         if (command.isEmpty()) return;
 
         String base = command.split(" ", 2)[0].toLowerCase();
-        if (base.equals("vlogs") || base.equals("velogs") || base.equals("velocitylogs")) return;
+        if (base.equals("clogs") || base.equals("clog") || base.equals("commandlogger")) return;
 
         if (config.isBlacklisted(command)) return;
 
@@ -3186,7 +3186,7 @@ public class CommandInterceptor implements Listener {
 }
 """
 
-PAPER_VLOGS_CMD = """package ir.muvixo.logs.paper;
+PAPER_VLOGS_CMD = """package ir.muvixo.cmdlogger.paper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -3198,16 +3198,16 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 
 /**
- * /vlogs - Paper side command with a permission-aware help menu.
+ * /clogs - Paper side command with a permission-aware help menu.
  *
  * @author muvixo
  */
 public class PaperVLogsCommand implements CommandExecutor, TabCompleter {
 
-    private final PaperLogs plugin;
+    private final CommandLogger plugin;
     private final Config config;
 
-    public PaperVLogsCommand(PaperLogs plugin, Config config) {
+    public PaperVLogsCommand(CommandLogger plugin, Config config) {
         this.plugin = plugin;
         this.config = config;
     }
@@ -3229,7 +3229,7 @@ public class PaperVLogsCommand implements CommandExecutor, TabCompleter {
         }
 
         if (sub.equals("creator") || sub.equals("author")) {
-            if (!sender.hasPermission(getPerm("creator", "velocitylogs.creator"))) {
+            if (!sender.hasPermission(getPerm("creator", "commandlogger.creator"))) {
                 noPerm(sender); return true;
             }
             sendCreator(sender);
@@ -3237,7 +3237,7 @@ public class PaperVLogsCommand implements CommandExecutor, TabCompleter {
         }
 
         if (sub.equals("info")) {
-            if (!sender.hasPermission(getPerm("use", "velocitylogs.use"))) {
+            if (!sender.hasPermission(getPerm("use", "commandlogger.use"))) {
                 noPerm(sender); return true;
             }
             sendInfo(sender);
@@ -3245,7 +3245,7 @@ public class PaperVLogsCommand implements CommandExecutor, TabCompleter {
         }
 
         if (sub.equals("status")) {
-            if (!sender.hasPermission(getPerm("status", "velocitylogs.status"))) {
+            if (!sender.hasPermission(getPerm("status", "commandlogger.status"))) {
                 noPerm(sender); return true;
             }
             sendStatus(sender);
@@ -3253,7 +3253,7 @@ public class PaperVLogsCommand implements CommandExecutor, TabCompleter {
         }
 
         if (sub.equals("reload")) {
-            if (!sender.hasPermission(getPerm("reload", "velocitylogs.reload"))) {
+            if (!sender.hasPermission(getPerm("reload", "commandlogger.reload"))) {
                 noPerm(sender); return true;
             }
             plugin.reloadAll();
@@ -3262,7 +3262,7 @@ public class PaperVLogsCommand implements CommandExecutor, TabCompleter {
         }
 
         if (sub.equals("toggle")) {
-            if (!sender.hasPermission(getPerm("toggle", "velocitylogs.toggle"))) {
+            if (!sender.hasPermission(getPerm("toggle", "commandlogger.toggle"))) {
                 noPerm(sender); return true;
             }
             boolean now = !plugin.isForwardingEnabled();
@@ -3274,7 +3274,7 @@ public class PaperVLogsCommand implements CommandExecutor, TabCompleter {
         }
 
         if (sub.equals("debug")) {
-            if (!sender.hasPermission(getPerm("debug", "velocitylogs.debug"))) {
+            if (!sender.hasPermission(getPerm("debug", "commandlogger.debug"))) {
                 noPerm(sender); return true;
             }
             boolean now = !plugin.isDebugEnabled();
@@ -3285,7 +3285,7 @@ public class PaperVLogsCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        sender.sendMessage(colorize("&cUnknown subcommand. Use &e/vlogs help"));
+        sender.sendMessage(colorize("&cUnknown subcommand. Use &e/clogs help"));
         return true;
     }
 
@@ -3298,13 +3298,13 @@ public class PaperVLogsCommand implements CommandExecutor, TabCompleter {
     }
 
     private void sendHelp(CommandSender sender) {
-        String permUse     = getPerm("use",     "velocitylogs.use");
-        String permCreator = getPerm("creator", "velocitylogs.creator");
-        String permAdmin   = getPerm("admin",   "velocitylogs.admin");
-        String permReload  = getPerm("reload",  "velocitylogs.reload");
-        String permStatus  = getPerm("status",  "velocitylogs.status");
-        String permToggle  = getPerm("toggle",  "velocitylogs.toggle");
-        String permDebug   = getPerm("debug",   "velocitylogs.debug");
+        String permUse     = getPerm("use",     "commandlogger.use");
+        String permCreator = getPerm("creator", "commandlogger.creator");
+        String permAdmin   = getPerm("admin",   "commandlogger.admin");
+        String permReload  = getPerm("reload",  "commandlogger.reload");
+        String permStatus  = getPerm("status",  "commandlogger.status");
+        String permToggle  = getPerm("toggle",  "commandlogger.toggle");
+        String permDebug   = getPerm("debug",   "commandlogger.debug");
 
         boolean isAdmin =
                 sender.hasPermission(permAdmin)
@@ -3323,17 +3323,17 @@ public class PaperVLogsCommand implements CommandExecutor, TabCompleter {
         }
 
         sender.sendMessage(colorize("&8&m----------------------------------"));
-        sender.sendMessage(colorize("&6&lVelocityLogs &7- &ePaper Commands"));
+        sender.sendMessage(colorize("&6&lCommandLogger &7- &ePaper Commands"));
         sender.sendMessage(colorize("&8&m----------------------------------"));
 
         sender.sendMessage(colorize("&e&lGeneral Commands"));
-        sender.sendMessage(colorize("  &6/vlogs help &8- &7Show this help"));
+        sender.sendMessage(colorize("  &6/clogs help &8- &7Show this help"));
 
         if (sender.hasPermission(permCreator)) {
-            sender.sendMessage(colorize("  &6/vlogs creator &8- &7Show plugin credits"));
+            sender.sendMessage(colorize("  &6/clogs creator &8- &7Show plugin credits"));
         }
         if (sender.hasPermission(permUse)) {
-            sender.sendMessage(colorize("  &6/vlogs info &8- &7Show plugin info"));
+            sender.sendMessage(colorize("  &6/clogs info &8- &7Show plugin info"));
         }
 
         if (isAdmin) {
@@ -3341,16 +3341,16 @@ public class PaperVLogsCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(colorize("&c&lAdmin Commands"));
 
             if (sender.hasPermission(permStatus)) {
-                sender.sendMessage(colorize("  &6/vlogs status &8- &7Show plugin status"));
+                sender.sendMessage(colorize("  &6/clogs status &8- &7Show plugin status"));
             }
             if (sender.hasPermission(permToggle)) {
-                sender.sendMessage(colorize("  &6/vlogs toggle &8- &7Toggle command forwarding"));
+                sender.sendMessage(colorize("  &6/clogs toggle &8- &7Toggle command forwarding"));
             }
             if (sender.hasPermission(permDebug)) {
-                sender.sendMessage(colorize("  &6/vlogs debug &8- &7Toggle debug mode"));
+                sender.sendMessage(colorize("  &6/clogs debug &8- &7Toggle debug mode"));
             }
             if (sender.hasPermission(permReload)) {
-                sender.sendMessage(colorize("  &6/vlogs reload &8- &7Reload configuration"));
+                sender.sendMessage(colorize("  &6/clogs reload &8- &7Reload configuration"));
             }
         }
 
@@ -3362,7 +3362,7 @@ public class PaperVLogsCommand implements CommandExecutor, TabCompleter {
 
     private void sendCreator(CommandSender sender) {
         sender.sendMessage(colorize("&8&m----------------------------------"));
-        sender.sendMessage(colorize("&6&lVelocityLogs-Paper"));
+        sender.sendMessage(colorize("&6&lCommandLogger-Paper"));
         sender.sendMessage(colorize("&7Author: &bmuvixo"));
         sender.sendMessage(colorize("&7Version: &f" + plugin.getDescription().getVersion()));
         sender.sendMessage(colorize("&7API: &fPaper 1.8.8+"));
@@ -3371,7 +3371,7 @@ public class PaperVLogsCommand implements CommandExecutor, TabCompleter {
 
     private void sendInfo(CommandSender sender) {
         sender.sendMessage(colorize("&8&m----------------------------------"));
-        sender.sendMessage(colorize("&6&lVelocityLogs &7- &eInfo"));
+        sender.sendMessage(colorize("&6&lCommandLogger &7- &eInfo"));
         sender.sendMessage(colorize("&7Channel: &e" + config.getChannel()));
         sender.sendMessage(colorize("&7Server name: &e" + config.getServerName()));
         sender.sendMessage(colorize("&7Log OPs: &e" + config.isLogOps()));
@@ -3381,7 +3381,7 @@ public class PaperVLogsCommand implements CommandExecutor, TabCompleter {
 
     private void sendStatus(CommandSender sender) {
         sender.sendMessage(colorize("&8&m----------------------------------"));
-        sender.sendMessage(colorize("&6&lVelocityLogs &7- &eStatus"));
+        sender.sendMessage(colorize("&6&lCommandLogger &7- &eStatus"));
         sender.sendMessage(colorize("&7Forwarding: "
                 + (plugin.isForwardingEnabled() ? "&aENABLED" : "&cDISABLED")));
         sender.sendMessage(colorize("&7Debug: "
@@ -3404,15 +3404,15 @@ public class PaperVLogsCommand implements CommandExecutor, TabCompleter {
             List<String> subs = new ArrayList<String>();
 
             boolean isAdmin =
-                    sender.hasPermission(getPerm("admin",  "velocitylogs.admin"))
-                 || sender.hasPermission(getPerm("reload", "velocitylogs.reload"))
-                 || sender.hasPermission(getPerm("status", "velocitylogs.status"))
-                 || sender.hasPermission(getPerm("toggle", "velocitylogs.toggle"))
-                 || sender.hasPermission(getPerm("debug",  "velocitylogs.debug"));
+                    sender.hasPermission(getPerm("admin",  "commandlogger.admin"))
+                 || sender.hasPermission(getPerm("reload", "commandlogger.reload"))
+                 || sender.hasPermission(getPerm("status", "commandlogger.status"))
+                 || sender.hasPermission(getPerm("toggle", "commandlogger.toggle"))
+                 || sender.hasPermission(getPerm("debug",  "commandlogger.debug"));
 
             boolean isUser =
-                    sender.hasPermission(getPerm("use",     "velocitylogs.use"))
-                 || sender.hasPermission(getPerm("creator", "velocitylogs.creator"));
+                    sender.hasPermission(getPerm("use",     "commandlogger.use"))
+                 || sender.hasPermission(getPerm("creator", "commandlogger.creator"));
 
             if (!isAdmin && !isUser) {
                 return out;
@@ -3420,12 +3420,12 @@ public class PaperVLogsCommand implements CommandExecutor, TabCompleter {
 
             subs.add("help");
 
-            if (sender.hasPermission(getPerm("creator", "velocitylogs.creator"))) subs.add("creator");
-            if (sender.hasPermission(getPerm("use",     "velocitylogs.use")))     subs.add("info");
-            if (sender.hasPermission(getPerm("status",  "velocitylogs.status")))  subs.add("status");
-            if (sender.hasPermission(getPerm("toggle",  "velocitylogs.toggle")))  subs.add("toggle");
-            if (sender.hasPermission(getPerm("debug",   "velocitylogs.debug")))   subs.add("debug");
-            if (sender.hasPermission(getPerm("reload",  "velocitylogs.reload")))  subs.add("reload");
+            if (sender.hasPermission(getPerm("creator", "commandlogger.creator"))) subs.add("creator");
+            if (sender.hasPermission(getPerm("use",     "commandlogger.use")))     subs.add("info");
+            if (sender.hasPermission(getPerm("status",  "commandlogger.status")))  subs.add("status");
+            if (sender.hasPermission(getPerm("toggle",  "commandlogger.toggle")))  subs.add("toggle");
+            if (sender.hasPermission(getPerm("debug",   "commandlogger.debug")))   subs.add("debug");
+            if (sender.hasPermission(getPerm("reload",  "commandlogger.reload")))  subs.add("reload");
 
             String partial = args[0].toLowerCase();
             for (String s : subs) if (s.startsWith(partial)) out.add(s);
@@ -3441,12 +3441,12 @@ public class PaperVLogsCommand implements CommandExecutor, TabCompleter {
 """
 
 PAPER_CONFIG_YML = """# ============================================================
-#  VelocityLogs-Paper v2.2 - backend config
+#  CommandLogger-Paper v2.2 - backend config
 #  Author: muvixo
 # ============================================================
 
 # Plugin messaging channel. MUST match the proxy side.
-channel: "velocitylogs:main"
+channel: "commandlogger:main"
 
 # Name of this backend server.
 # Leave empty to auto-detect.
@@ -3474,48 +3474,48 @@ ignored-players: []
 #  Permission Nodes
 # ============================================================
 permissions:
-  use:      "velocitylogs.use"
-  creator:  "velocitylogs.creator"
+  use:      "commandlogger.use"
+  creator:  "commandlogger.creator"
 
-  admin:    "velocitylogs.admin"
-  reload:   "velocitylogs.reload"
-  status:   "velocitylogs.status"
-  toggle:   "velocitylogs.toggle"
-  debug:    "velocitylogs.debug"
+  admin:    "commandlogger.admin"
+  reload:   "commandlogger.reload"
+  status:   "commandlogger.status"
+  toggle:   "commandlogger.toggle"
+  debug:    "commandlogger.debug"
 """
 
-PAPER_PLUGIN_YML = """name: VelocityLogs-Paper
-main: ir.muvixo.logs.paper.PaperLogs
+PAPER_PLUGIN_YML = """name: CommandLogger-Paper
+main: ir.muvixo.cmdlogger.paper.CommandLogger
 version: ${project.version}
 author: muvixo
 description: Forwards every command executed by players to the proxy
 
 commands:
   vlogs:
-    description: VelocityLogs Paper helper command
-    usage: /vlogs help
-    aliases: [velogs, velocitylogs]
+    description: CommandLogger Paper helper command
+    usage: /clogs help
+    aliases: [velogs, commandlogger]
 
 permissions:
-  velocitylogs.use:
-    description: Access to /vlogs info
+  commandlogger.use:
+    description: Access to /clogs info
     default: op
-  velocitylogs.creator:
+  commandlogger.creator:
     description: See plugin credits
     default: op
-  velocitylogs.admin:
+  commandlogger.admin:
     description: Full admin access
     default: op
-  velocitylogs.reload:
+  commandlogger.reload:
     description: Reload config
     default: op
-  velocitylogs.status:
+  commandlogger.status:
     description: Show plugin status
     default: op
-  velocitylogs.toggle:
+  commandlogger.toggle:
     description: Toggle command forwarding on/off
     default: op
-  velocitylogs.debug:
+  commandlogger.debug:
     description: Toggle debug mode
     default: op
 """
@@ -3536,42 +3536,42 @@ FILES = {
     "velocity-plugin/pom.xml": VELOCITY_POM,
     "velocity-plugin/src/main/resources/velocity-plugin.json": VELOCITY_JSON,
     "velocity-plugin/src/main/resources/config.yml": VELOCITY_CONFIG_YML,
-    "velocity-plugin/src/main/java/ir/muvixo/logs/velocity/VelocityLogs.java": VELOCITY_MAIN,
-    "velocity-plugin/src/main/java/ir/muvixo/logs/velocity/Config.java": VELOCITY_CONFIG,
-    "velocity-plugin/src/main/java/ir/muvixo/logs/velocity/ColorUtil.java": VELOCITY_COLOR_UTIL,
-    "velocity-plugin/src/main/java/ir/muvixo/logs/velocity/OpPlayerManager.java": VELOCITY_OP_MANAGER,
-    "velocity-plugin/src/main/java/ir/muvixo/logs/velocity/PermissionChecker.java": VELOCITY_PERM_CHECKER,
-    "velocity-plugin/src/main/java/ir/muvixo/logs/velocity/BackendMessageReceiver.java": VELOCITY_BACKEND_RECEIVER,
-    "velocity-plugin/src/main/java/ir/muvixo/logs/velocity/LogsCommand.java": VELOCITY_LOGS_COMMAND,
+    "velocity-plugin/src/main/java/ir/muvixo/clogs/velocity/CommandLogger.java": VELOCITY_MAIN,
+    "velocity-plugin/src/main/java/ir/muvixo/clogs/velocity/Config.java": VELOCITY_CONFIG,
+    "velocity-plugin/src/main/java/ir/muvixo/clogs/velocity/ColorUtil.java": VELOCITY_COLOR_UTIL,
+    "velocity-plugin/src/main/java/ir/muvixo/clogs/velocity/OpPlayerManager.java": VELOCITY_OP_MANAGER,
+    "velocity-plugin/src/main/java/ir/muvixo/clogs/velocity/PermissionChecker.java": VELOCITY_PERM_CHECKER,
+    "velocity-plugin/src/main/java/ir/muvixo/clogs/velocity/BackendMessageReceiver.java": VELOCITY_BACKEND_RECEIVER,
+    "velocity-plugin/src/main/java/ir/muvixo/clogs/velocity/LogsCommand.java": VELOCITY_LOGS_COMMAND,
 
     # BungeeCord plugin
     "bungee-plugin/pom.xml": BUNGEE_POM,
     "bungee-plugin/src/main/resources/plugin.yml": BUNGEE_PLUGIN_YML,
     "bungee-plugin/src/main/resources/config.yml": BUNGEE_CONFIG_YML,
-    "bungee-plugin/src/main/java/ir/muvixo/logs/bungee/BungeeLogs.java": BUNGEE_MAIN,
-    "bungee-plugin/src/main/java/ir/muvixo/logs/bungee/Config.java": BUNGEE_CONFIG,
-    "bungee-plugin/src/main/java/ir/muvixo/logs/bungee/OpPlayerManager.java": BUNGEE_OP_MANAGER,
-    "bungee-plugin/src/main/java/ir/muvixo/logs/bungee/PermissionChecker.java": BUNGEE_PERM_CHECKER,
-    "bungee-plugin/src/main/java/ir/muvixo/logs/bungee/BackendMessageReceiver.java": BUNGEE_BACKEND_RECEIVER,
-    "bungee-plugin/src/main/java/ir/muvixo/logs/bungee/BungeeLogsCommand.java": BUNGEE_LOGS_COMMAND,
+    "bungee-plugin/src/main/java/ir/muvixo/clogs/bungee/CommandLogger.java": BUNGEE_MAIN,
+    "bungee-plugin/src/main/java/ir/muvixo/clogs/bungee/Config.java": BUNGEE_CONFIG,
+    "bungee-plugin/src/main/java/ir/muvixo/clogs/bungee/OpPlayerManager.java": BUNGEE_OP_MANAGER,
+    "bungee-plugin/src/main/java/ir/muvixo/clogs/bungee/PermissionChecker.java": BUNGEE_PERM_CHECKER,
+    "bungee-plugin/src/main/java/ir/muvixo/clogs/bungee/BackendMessageReceiver.java": BUNGEE_BACKEND_RECEIVER,
+    "bungee-plugin/src/main/java/ir/muvixo/clogs/bungee/CommandLoggerCommand.java": BUNGEE_LOGS_COMMAND,
 
     # Spigot plugin
     "spigot-plugin/pom.xml": SPIGOT_POM,
     "spigot-plugin/src/main/resources/config.yml": SPIGOT_CONFIG_YML,
     "spigot-plugin/src/main/resources/plugin.yml": SPIGOT_PLUGIN_YML,
-    "spigot-plugin/src/main/java/ir/muvixo/logs/spigot/SpigotLogs.java": SPIGOT_MAIN,
-    "spigot-plugin/src/main/java/ir/muvixo/logs/spigot/Config.java": SPIGOT_CONFIG,
-    "spigot-plugin/src/main/java/ir/muvixo/logs/spigot/CommandInterceptor.java": SPIGOT_INTERCEPTOR,
-    "spigot-plugin/src/main/java/ir/muvixo/logs/spigot/VLogsCommand.java": SPIGOT_VLOGS_CMD,
+    "spigot-plugin/src/main/java/ir/muvixo/clogs/spigot/CommandLogger.java": SPIGOT_MAIN,
+    "spigot-plugin/src/main/java/ir/muvixo/clogs/spigot/Config.java": SPIGOT_CONFIG,
+    "spigot-plugin/src/main/java/ir/muvixo/clogs/spigot/CommandInterceptor.java": SPIGOT_INTERCEPTOR,
+    "spigot-plugin/src/main/java/ir/muvixo/clogs/spigot/VLogsCommand.java": SPIGOT_VLOGS_CMD,
 
     # Paper plugin
     "paper-plugin/pom.xml": PAPER_POM,
     "paper-plugin/src/main/resources/config.yml": PAPER_CONFIG_YML,
     "paper-plugin/src/main/resources/plugin.yml": PAPER_PLUGIN_YML,
-    "paper-plugin/src/main/java/ir/muvixo/logs/paper/PaperLogs.java": PAPER_MAIN,
-    "paper-plugin/src/main/java/ir/muvixo/logs/paper/Config.java": PAPER_CONFIG,
-    "paper-plugin/src/main/java/ir/muvixo/logs/paper/CommandInterceptor.java": PAPER_INTERCEPTOR,
-    "paper-plugin/src/main/java/ir/muvixo/logs/paper/PaperVLogsCommand.java": PAPER_VLOGS_CMD,
+    "paper-plugin/src/main/java/ir/muvixo/clogs/paper/CommandLogger.java": PAPER_MAIN,
+    "paper-plugin/src/main/java/ir/muvixo/clogs/paper/Config.java": PAPER_CONFIG,
+    "paper-plugin/src/main/java/ir/muvixo/clogs/paper/CommandInterceptor.java": PAPER_INTERCEPTOR,
+    "paper-plugin/src/main/java/ir/muvixo/clogs/paper/PaperVLogsCommand.java": PAPER_VLOGS_CMD,
 }
 
 
@@ -3589,7 +3589,7 @@ def create_file(path, content):
 
 def main():
     print("=" * 60)
-    print("  VelocityLogs v2.2 - Project Generator")
+    print("  CommandLogger v2.2 - Project Generator")
     print("  Generating Velocity + BungeeCord + Spigot + Paper")
     print("=" * 60)
     print()
@@ -3605,10 +3605,10 @@ def main():
     print("Next steps:")
     print("  1. mvn clean package")
     print("  2. Copy the jars to your servers:")
-    print("     - velocity-plugin/target/velocity-logs-velocity-2.2.0.jar -> Velocity proxy")
-    print("     - bungee-plugin/target/velocity-logs-bungee-2.2.0.jar     -> BungeeCord proxy")
-    print("     - spigot-plugin/target/velocity-logs-spigot-2.2.0.jar     -> Spigot backend")
-    print("     - paper-plugin/target/velocity-logs-paper-2.2.0.jar       -> Paper backend")
+    print("     - velocity-plugin/target/commandlogger-velocity-2.2.0.jar -> Velocity proxy")
+    print("     - bungee-plugin/target/commandlogger-bungee-2.2.0.jar     -> BungeeCord proxy")
+    print("     - spigot-plugin/target/commandlogger-spigot-2.2.0.jar     -> Spigot backend")
+    print("     - paper-plugin/target/commandlogger-paper-2.2.0.jar       -> Paper backend")
     print()
 
 

@@ -1,4 +1,4 @@
-package ir.muvixo.logs.paper;
+package ir.muvixo.cmdlogger.spigot;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -8,13 +8,13 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
- * Config wrapper for PaperLogs v2.2.
+ * Config wrapper for CommandLogger v2.2.
  *
  * @author muvixo
  */
 public class Config {
 
-    private final PaperLogs plugin;
+    private final CommandLogger plugin;
 
     private String channel;
     private String serverName;
@@ -24,7 +24,7 @@ public class Config {
     private List<String> blacklist;
     private List<String> ignoredPlayers;
 
-    public Config(PaperLogs plugin) {
+    public Config(CommandLogger plugin) {
         this.plugin = plugin;
     }
 
@@ -32,7 +32,7 @@ public class Config {
         plugin.reloadConfig();
         FileConfiguration cfg = plugin.getConfig();
 
-        this.channel = cfg.getString("channel", "velocitylogs:main");
+        this.channel = cfg.getString("channel", "commandlogger:main");
         this.logOps = cfg.getBoolean("log-ops", true);
         this.reportOpStatus = cfg.getBoolean("report-op-status", true);
         this.opStatusIntervalMinutes = cfg.getInt("op-status-interval-minutes", 5);

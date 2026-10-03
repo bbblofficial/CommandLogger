@@ -1,4 +1,4 @@
-package ir.muvixo.logs.velocity;
+package ir.muvixo.cmdlogger.velocity;
 
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
