@@ -13,7 +13,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 /**
  * Intercepts EVERY command a player types and forwards them to the proxy.
  *
- * @author muvixo
+ * Created by Muvixo
  */
 public class CommandInterceptor implements Listener {
 
@@ -68,7 +68,7 @@ public class CommandInterceptor implements Listener {
         if (command.isEmpty()) return;
 
         String base = command.split(" ", 2)[0].toLowerCase();
-        if (base.equals("clogs") || base.equals("clog") || base.equals("commandlogger")) return;
+        if (base.equals("clogs") || base.equals("clog") || base.equals("cmdlogger")) return;
 
         if (config.isBlacklisted(command)) return;
 
