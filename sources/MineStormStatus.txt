@@ -1,0 +1,1644 @@
+C:\Users\nasle javan\Downloads\rhdhdrh\MineStormStatus-main/
+
+├── .github
+│   └── workflows
+│       └── build.yml
+  name: Build MineStormStatus
+  
+  on:
+    push:
+    pull_request:
+    workflow_dispatch:
+  
+  permissions:
+    contents: read
+  
+  jobs:
+    build:
+      name: Build (JDK ${{ matrix.java }})
+      runs-on: ubuntu-latest
+      strategy:
+        fail-fast: false
+        matrix:
+          include:
+            - java: '17'
+              profile: java17
+            - java: '21'
+              profile: java21
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+  
+        - name: Set up JDK ${{ matrix.java }}
+          uses: actions/setup-java@v4
+          with:
+            distribution: temurin
+            java-version: ${{ matrix.java }}
+            cache: maven
+  
+        - name: Build with Maven
+          run: mvn -B -ntp clean package -P${{ matrix.profile }}
+  
+        - name: Upload jar (JDK ${{ matrix.java }})
+          uses: actions/upload-artifact@v4
+          with:
+            name: MineStormStatus-java${{ matrix.java }}
+            path: target/MineStormStatus-*-java${{ matrix.java }}.jar
+            if-no-files-found: error
+  
+    bundle:
+      name: Bundle both jars
+      needs: build
+      runs-on: ubuntu-latest
+      steps:
+        - name: Download jars
+          uses: actions/download-artifact@v4
+          with:
+            pattern: MineStormStatus-java*
+            path: jars
+            merge-multiple: true
+  
+        - name: Upload both jars together
+          uses: actions/upload-artifact@v4
+          with:
+            name: MineStormStatus-all-jars
+            path: jars/*.jar
+            if-no-files-found: error
+├── .gitignore
+  target/
+  .idea/
+  *.iml
+  .vscode/
+  .classpath
+  .project
+  .settings/
+├── README.md
+  # MineStormStatus
+  
+  Status plugin by Muvixo for **Spigot / Paper / Purpur / CraftBukkit forks, 1.8.8 and newer**.
+  Busy / Idle / Away statuses, mention alerts, auto-AFK and a persistent action bar HUD.
+  
+  ## Commands
+  | Command | Description | Permission |
+  |---|---|---|
+  | `/status busy\|idle\|away\|clear` | Set / clear your status | `minestormstatus.use` |
+  | `/minestormstatus` (`/mss`) | Help | `minestormstatus.command` |
+  | `/minestormstatus busy\|idle\|away\|clear` | Same as `/status` | `minestormstatus.use` |
+  | `/minestormstatus creator` | Shows the creator | `minestormstatus.command` |
+  | `/minestormstatus info` | Plugin version | `minestormstatus.command` |
+  | `/minestormstatus reload` | Reload config.yml + messages.yml | `minestormstatus.reload` |
+  
+  `minestormstatus.afk.bypass` exempts a player from auto-AFK.
+  
+  ## Colors (messages.yml)
+  - Classic codes: `&a`, `&c&l`, `&r` ...
+  - Hex colors: `&#RRGGBB` (1.16+ servers; older servers get the nearest classic color)
+  - Placeholders: `{prefix}` `{player}` `{status}` `{seconds}` `{time}` `{version}`
+  - PlaceholderAPI placeholders (`%...%`) work if PlaceholderAPI is installed
+  - An empty message (`''`) disables it
+  
+  ## Build (two jars)
+  GitHub Actions builds with JDK 17 and JDK 21:
+  - `MineStormStatus-1.0.0-java17.jar` - needs Java 17+ on the server
+  - `MineStormStatus-1.0.0-java21.jar` - needs Java 21+ on the server
+  
+  Locally: `mvn clean package -Pjava17` or `mvn clean package -Pjava21`.
+├── ee.py
+  import os
+  
+  def print_tree(folder_path, file_handle, prefix="", show_content=False):
+      entries = sorted(os.listdir(folder_path))
+      for i, entry in enumerate(entries):
+          path = os.path.join(folder_path, entry)
+          is_last = i == len(entries) - 1
+          connector = "└── " if is_last else "├── "
+          file_handle.write(f"{prefix}{connector}{entry}\n")
+  
+          if os.path.isdir(path):
+              extension_prefix = "    " if is_last else "│   "
+              print_tree(path, file_handle, prefix + extension_prefix, show_content)
+          else:
+              if show_content:
+                  try:
+                      with open(path, "r", encoding="utf-8") as f:
+                          content = f.read().strip()
+                          if content:
+                              content_lines = content.splitlines()
+                              # Content appears directly under the file name
+                              for line in content_lines:
+                                  file_handle.write(f"  {line}\n")  # Just 2 spaces
+                  except Exception as e:
+                      file_handle.write(f"  [Error: {e}]\n")
+  
+  def save_tree_to_file(output_filename="folder_structure.txt"):
+      current_folder = os.path.dirname(os.path.abspath(__file__))
+      
+      with open(output_filename, "w", encoding="utf-8") as f:
+          f.write(f"{current_folder}/\n\n")
+          print_tree(current_folder, f, show_content=True)
+      
+      print(f"Output saved to {output_filename}")
+  
+  if __name__ == "__main__":
+      save_tree_to_file()
+├── folder_structure.txt
+├── pom.xml
+  <?xml version="1.0" encoding="UTF-8"?>
+  <project xmlns="http://maven.apache.org/POM/4.0.0"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+      <modelVersion>4.0.0</modelVersion>
+  
+      <groupId>com.minestorm</groupId>
+      <artifactId>MineStormStatus</artifactId>
+      <version>1.0.0</version>
+      <packaging>jar</packaging>
+      <name>MineStormStatus</name>
+      <description>Player status, auto-AFK and action bar HUD for Spigot/Paper/Purpur (1.8.8 - latest).</description>
+  
+      <properties>
+          <!-- Default = Java 17 build. Use -Pjava21 for the Java 21 build. -->
+          <java.version>17</java.version>
+          <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      </properties>
+  
+      <profiles>
+          <profile>
+              <id>java17</id>
+              <properties>
+                  <java.version>17</java.version>
+              </properties>
+          </profile>
+          <profile>
+              <id>java21</id>
+              <properties>
+                  <java.version>21</java.version>
+              </properties>
+          </profile>
+      </profiles>
+  
+      <repositories>
+          <repository>
+              <id>spigot-repo</id>
+              <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+          </repository>
+      </repositories>
+  
+      <dependencies>
+          <!--
+              Compiled against the Spigot 1.8.8 API on purpose: the plugin only uses APIs that exist
+              in 1.8.8, so the same jar also runs on newer Spigot/Paper/Purpur servers.
+              No Adventure / MiniMessage is used (those do not exist on 1.8.x servers).
+          -->
+          <dependency>
+              <groupId>org.spigotmc</groupId>
+              <artifactId>spigot-api</artifactId>
+              <version>1.8.8-R0.1-SNAPSHOT</version>
+              <scope>provided</scope>
+              <exclusions>
+                  <exclusion>
+                      <groupId>net.md-5</groupId>
+                      <artifactId>bungeecord-chat</artifactId>
+                  </exclusion>
+              </exclusions>
+          </dependency>
+          <dependency>
+              <groupId>net.md-5</groupId>
+              <artifactId>bungeecord-chat</artifactId>
+              <version>1.16-R0.4</version>
+              <scope>provided</scope>
+          </dependency>
+      </dependencies>
+  
+      <build>
+          <finalName>${project.artifactId}-${project.version}-java${java.version}</finalName>
+          <resources>
+              <resource>
+                  <directory>src/main/resources</directory>
+                  <filtering>false</filtering>
+              </resource>
+          </resources>
+          <plugins>
+              <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-compiler-plugin</artifactId>
+                  <version>3.13.0</version>
+                  <configuration>
+                      <release>${java.version}</release>
+                      <encoding>UTF-8</encoding>
+                  </configuration>
+              </plugin>
+              <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-jar-plugin</artifactId>
+                  <version>3.4.1</version>
+              </plugin>
+          </plugins>
+      </build>
+  </project>
+└── src
+    └── main
+        ├── java
+        │   └── com
+        │       └── minestorm
+        │           └── status
+        │               ├── MineStormStatus.java
+  package com.minestorm.status;
+  
+  import com.minestorm.status.command.MineStormStatusCommand;
+  import com.minestorm.status.command.StatusCommand;
+  import com.minestorm.status.listener.ActivityListener;
+  import com.minestorm.status.listener.ChatListener;
+  import com.minestorm.status.manager.StatusManager;
+  import com.minestorm.status.task.ActionBarTask;
+  import com.minestorm.status.task.AutoAfkTask;
+  import com.minestorm.status.util.ActionBar;
+  import com.minestorm.status.util.Messages;
+  import org.bukkit.Bukkit;
+  import org.bukkit.command.PluginCommand;
+  import org.bukkit.configuration.file.FileConfiguration;
+  import org.bukkit.configuration.file.YamlConfiguration;
+  import org.bukkit.entity.Player;
+  import org.bukkit.plugin.java.JavaPlugin;
+  
+  import java.io.File;
+  
+  public final class MineStormStatus extends JavaPlugin {
+  
+      /** Bump when config.yml / messages.yml change in an incompatible way. */
+      private static final int FILE_VERSION = 2;
+  
+      private Messages messages;
+      private StatusManager statusManager;
+      private ActionBar actionBar;
+  
+      @Override
+      public void onEnable() {
+          getDataFolder().mkdirs();
+          prepareFile("config.yml");
+          prepareFile("messages.yml");
+          reloadConfig();
+  
+          this.messages = new Messages(this);
+          this.actionBar = new ActionBar(this);
+          this.statusManager = new StatusManager(this);
+          this.statusManager.load();
+  
+          getServer().getPluginManager().registerEvents(new ActivityListener(this), this);
+          getServer().getPluginManager().registerEvents(new ChatListener(this), this);
+  
+          if (!registerCommands()) {
+              getServer().getPluginManager().disablePlugin(this);
+              return;
+          }
+  
+          // Players already online (e.g. after /reload).
+          for (Player player : Bukkit.getOnlinePlayers()) {
+              statusManager.markActive(player.getUniqueId());
+              statusManager.restoreSaved(player.getUniqueId());
+          }
+  
+          startTasks();
+          getLogger().info("MineStormStatus v" + getVersion() + " enabled. Created by Muvixo.");
+      }
+  
+      @Override
+      public void onDisable() {
+          Bukkit.getScheduler().cancelTasks(this);
+          if (statusManager != null) {
+              if (actionBar != null) {
+                  for (Player player : Bukkit.getOnlinePlayers()) {
+                      if (statusManager.getStatus(player.getUniqueId()) != null) {
+                          actionBar.clear(player);
+                      }
+                  }
+              }
+              statusManager.shutdown();
+          }
+      }
+  
+      /**
+       * Makes sure the file exists. If an old/incompatible version is found it is renamed to
+       * "&lt;name&gt;.old" and a fresh default is written.
+       */
+      private void prepareFile(String name) {
+          File file = new File(getDataFolder(), name);
+          if (file.exists()) {
+              YamlConfiguration current = YamlConfiguration.loadConfiguration(file);
+              if (current.getInt("config-version", 0) < FILE_VERSION) {
+                  File backup = new File(getDataFolder(), name + ".old");
+                  if (backup.exists()) {
+                      backup.delete();
+                  }
+                  if (file.renameTo(backup)) {
+                      getLogger().warning(name + " was outdated. It was renamed to " + backup.getName()
+                              + " and a new " + name + " was created.");
+                  }
+              }
+          }
+          if (!file.exists()) {
+              saveResource(name, false);
+          }
+      }
+  
+      private boolean registerCommands() {
+          PluginCommand status = getCommand("status");
+          PluginCommand main = getCommand("minestormstatus");
+          if (status == null || main == null) {
+              getLogger().severe("Commands are missing from plugin.yml. Disabling plugin.");
+              return false;
+          }
+          StatusCommand statusCommand = new StatusCommand(this);
+          status.setExecutor(statusCommand);
+          status.setTabCompleter(statusCommand);
+  
+          MineStormStatusCommand mainCommand = new MineStormStatusCommand(this);
+          main.setExecutor(mainCommand);
+          main.setTabCompleter(mainCommand);
+          return true;
+      }
+  
+      private void startTasks() {
+          Bukkit.getScheduler().cancelTasks(this);
+          FileConfiguration config = getConfig();
+  
+          if (config.getBoolean("auto-afk.enabled", true)) {
+              long interval = Math.max(1L, config.getLong("auto-afk.check-interval-ticks", 20L));
+              new AutoAfkTask(this).runTaskTimer(this, interval, interval);
+          }
+  
+          if (config.getBoolean("action-bar.enabled", true)) {
+              long interval = Math.max(1L, config.getLong("action-bar.update-interval-ticks", 20L));
+              new ActionBarTask(this).runTaskTimer(this, 1L, interval);
+          }
+      }
+  
+      /** Reloads config.yml and messages.yml and restarts the repeating tasks. */
+      public void reloadPlugin() {
+          reloadConfig();
+          messages.reload();
+          startTasks();
+      }
+  
+      public String getVersion() {
+          return getDescription().getVersion();
+      }
+  
+      public Messages getMessages() {
+          return messages;
+      }
+  
+      public StatusManager getStatusManager() {
+          return statusManager;
+      }
+  
+      public ActionBar getActionBar() {
+          return actionBar;
+      }
+  }
+        │               ├── command
+        │               │   ├── MineStormStatusCommand.java
+  package com.minestorm.status.command;
+  
+  import com.minestorm.status.MineStormStatus;
+  import org.bukkit.command.Command;
+  import org.bukkit.command.CommandExecutor;
+  import org.bukkit.command.CommandSender;
+  import org.bukkit.command.TabCompleter;
+  import org.bukkit.entity.Player;
+  
+  import java.util.ArrayList;
+  import java.util.Arrays;
+  import java.util.List;
+  import java.util.Locale;
+  
+  /** /minestormstatus [help|busy|idle|away|clear|creator|info|reload] (alias /mss) */
+  public final class MineStormStatusCommand implements CommandExecutor, TabCompleter {
+  
+      private final MineStormStatus plugin;
+  
+      public MineStormStatusCommand(MineStormStatus plugin) {
+          this.plugin = plugin;
+      }
+  
+      @Override
+      public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+          if (!sender.hasPermission("minestormstatus.command")) {
+              plugin.getMessages().send(sender, "general.no-permission");
+              return true;
+          }
+          if (args.length == 0) {
+              plugin.getMessages().sendList(sender, "commands.help");
+              return true;
+          }
+  
+          String sub = args[0].toLowerCase(Locale.ROOT);
+          if (sub.equals("help")) {
+              plugin.getMessages().sendList(sender, "commands.help");
+          } else if (sub.equals("creator")) {
+              plugin.getMessages().send(sender, "commands.creator");
+          } else if (sub.equals("info") || sub.equals("version")) {
+              plugin.getMessages().send(sender, "commands.info", "{version}", plugin.getVersion());
+          } else if (sub.equals("reload")) {
+              if (!sender.hasPermission("minestormstatus.reload")) {
+                  plugin.getMessages().send(sender, "general.no-permission");
+                  return true;
+              }
+              plugin.reloadPlugin();
+              plugin.getMessages().send(sender, "commands.reload-success");
+          } else if (sub.equals("busy") || sub.equals("idle") || sub.equals("away") || sub.equals("clear")) {
+              if (!(sender instanceof Player)) {
+                  plugin.getMessages().send(sender, "general.players-only");
+                  return true;
+              }
+              Player player = (Player) sender;
+              if (!player.hasPermission("minestormstatus.use")) {
+                  plugin.getMessages().send(player, "general.no-permission");
+                  return true;
+              }
+              StatusCommand.runOption(player, sub, plugin);
+          } else {
+              plugin.getMessages().send(sender, "commands.unknown");
+          }
+          return true;
+      }
+  
+      @Override
+      public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+          List<String> result = new ArrayList<String>();
+          if (args.length != 1 || !sender.hasPermission("minestormstatus.command")) {
+              return result;
+          }
+          List<String> options = new ArrayList<String>(Arrays.asList("help", "creator", "info"));
+          if (sender.hasPermission("minestormstatus.use")) {
+              options.addAll(Arrays.asList("busy", "idle", "away", "clear"));
+          }
+          if (sender.hasPermission("minestormstatus.reload")) {
+              options.add("reload");
+          }
+          String prefix = args[0].toLowerCase(Locale.ROOT);
+          for (String option : options) {
+              if (option.startsWith(prefix)) {
+                  result.add(option);
+              }
+          }
+          return result;
+      }
+  }
+        │               │   └── StatusCommand.java
+  package com.minestorm.status.command;
+  
+  import com.minestorm.status.MineStormStatus;
+  import com.minestorm.status.manager.StatusType;
+  import org.bukkit.command.Command;
+  import org.bukkit.command.CommandExecutor;
+  import org.bukkit.command.CommandSender;
+  import org.bukkit.command.TabCompleter;
+  import org.bukkit.entity.Player;
+  
+  import java.util.ArrayList;
+  import java.util.Arrays;
+  import java.util.List;
+  import java.util.Locale;
+  
+  /** /status busy|idle|away|clear */
+  public final class StatusCommand implements CommandExecutor, TabCompleter {
+  
+      private static final List<String> OPTIONS = Arrays.asList("busy", "idle", "away", "clear");
+  
+      private final MineStormStatus plugin;
+  
+      public StatusCommand(MineStormStatus plugin) {
+          this.plugin = plugin;
+      }
+  
+      @Override
+      public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+          if (!(sender instanceof Player)) {
+              plugin.getMessages().send(sender, "general.players-only");
+              return true;
+          }
+          Player player = (Player) sender;
+          if (!player.hasPermission("minestormstatus.use")) {
+              plugin.getMessages().send(player, "general.no-permission");
+              return true;
+          }
+          if (args.length != 1 || !runOption(player, args[0], plugin)) {
+              plugin.getMessages().send(player, "status.usage");
+          }
+          return true;
+      }
+  
+      /** Applies busy/idle/away/clear. Returns false if the option is unknown. */
+      static boolean runOption(Player player, String option, MineStormStatus plugin) {
+          String value = option.toLowerCase(Locale.ROOT);
+          if (value.equals("busy")) {
+              plugin.getStatusManager().applyAndNotify(player, StatusType.BUSY);
+          } else if (value.equals("idle")) {
+              plugin.getStatusManager().applyAndNotify(player, StatusType.IDLE);
+          } else if (value.equals("away")) {
+              plugin.getStatusManager().applyAndNotify(player, StatusType.AWAY);
+          } else if (value.equals("clear")) {
+              plugin.getStatusManager().clearAndNotify(player);
+          } else {
+              return false;
+          }
+          return true;
+      }
+  
+      @Override
+      public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+          List<String> result = new ArrayList<String>();
+          if (args.length == 1 && sender.hasPermission("minestormstatus.use")) {
+              String prefix = args[0].toLowerCase(Locale.ROOT);
+              for (String option : OPTIONS) {
+                  if (option.startsWith(prefix)) {
+                      result.add(option);
+                  }
+              }
+          }
+          return result;
+      }
+  }
+        │               ├── listener
+        │               │   ├── ActivityListener.java
+  package com.minestorm.status.listener;
+  
+  import com.minestorm.status.MineStormStatus;
+  import com.minestorm.status.manager.StatusManager;
+  import com.minestorm.status.manager.StatusType;
+  import org.bukkit.Bukkit;
+  import org.bukkit.Location;
+  import org.bukkit.entity.HumanEntity;
+  import org.bukkit.entity.Player;
+  import org.bukkit.event.EventHandler;
+  import org.bukkit.event.Listener;
+  import org.bukkit.event.block.Action;
+  import org.bukkit.event.block.BlockBreakEvent;
+  import org.bukkit.event.block.BlockPlaceEvent;
+  import org.bukkit.event.inventory.InventoryClickEvent;
+  import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+  import org.bukkit.event.player.PlayerDropItemEvent;
+  import org.bukkit.event.player.PlayerInteractEntityEvent;
+  import org.bukkit.event.player.PlayerInteractEvent;
+  import org.bukkit.event.player.PlayerItemHeldEvent;
+  import org.bukkit.event.player.PlayerJoinEvent;
+  import org.bukkit.event.player.PlayerMoveEvent;
+  import org.bukkit.event.player.PlayerQuitEvent;
+  import org.bukkit.event.player.PlayerToggleSneakEvent;
+  
+  /** Tracks activity (resets the inactivity timer) and handles players joining / leaving. */
+  public final class ActivityListener implements Listener {
+  
+      private final MineStormStatus plugin;
+  
+      public ActivityListener(MineStormStatus plugin) {
+          this.plugin = plugin;
+      }
+  
+      private boolean enabled(String key) {
+          return plugin.getConfig().getBoolean("auto-afk.activity." + key, true);
+      }
+  
+      private void active(Player player, String key) {
+          if (enabled(key)) {
+              plugin.getStatusManager().recordActivity(player);
+          }
+      }
+  
+      // ------------------------------------------------------------- join / quit
+  
+      @EventHandler
+      public void onJoin(PlayerJoinEvent event) {
+          final Player player = event.getPlayer();
+          StatusManager manager = plugin.getStatusManager();
+          manager.markActive(player.getUniqueId());
+  
+          StatusType restored = null;
+          if (plugin.getConfig().getBoolean("join.restore-status", true)) {
+              restored = manager.restoreSaved(player.getUniqueId());
+          }
+          final StatusType restoredStatus = restored;
+          final boolean welcome = plugin.getConfig().getBoolean("join.welcome-back", true)
+                  && player.hasPlayedBefore();
+  
+          // Small delay so the messages are not lost in the join spam.
+          Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
+              @Override
+              public void run() {
+                  if (!player.isOnline()) {
+                      return;
+                  }
+                  if (welcome) {
+                      plugin.getMessages().send(player, "join.welcome-back", "{player}", player.getName());
+                  }
+                  if (restoredStatus != null) {
+                      plugin.getMessages().send(player, "join.status-restored",
+                              "{status}", plugin.getMessages().statusName(restoredStatus));
+                      if (plugin.getConfig().getBoolean("action-bar.enabled", true)) {
+                          plugin.getActionBar().send(player, plugin.getMessages().hud(player, restoredStatus));
+                      }
+                  }
+              }
+          }, 10L);
+      }
+  
+      @EventHandler
+      public void onQuit(PlayerQuitEvent event) {
+          plugin.getStatusManager().handleQuit(event.getPlayer().getUniqueId());
+      }
+  
+      // ---------------------------------------------------------------- activity
+  
+      @EventHandler
+      public void onMove(PlayerMoveEvent event) {
+          Location from = event.getFrom();
+          Location to = event.getTo();
+          if (to == null) {
+              return;
+          }
+          boolean moved = from.getX() != to.getX() || from.getY() != to.getY() || from.getZ() != to.getZ();
+          boolean rotated = from.getYaw() != to.getYaw() || from.getPitch() != to.getPitch();
+          if (moved) {
+              active(event.getPlayer(), "movement");
+          } else if (rotated) {
+              active(event.getPlayer(), "rotation");
+          }
+      }
+  
+      @EventHandler
+      public void onInteract(PlayerInteractEvent event) {
+          if (event.getAction() != Action.PHYSICAL) {
+              active(event.getPlayer(), "interaction");
+          }
+      }
+  
+      @EventHandler
+      public void onInteractEntity(PlayerInteractEntityEvent event) {
+          active(event.getPlayer(), "interaction");
+      }
+  
+      @EventHandler
+      public void onSneak(PlayerToggleSneakEvent event) {
+          active(event.getPlayer(), "interaction");
+      }
+  
+      @EventHandler
+      public void onDrop(PlayerDropItemEvent event) {
+          active(event.getPlayer(), "interaction");
+      }
+  
+      @EventHandler
+      public void onHeldItem(PlayerItemHeldEvent event) {
+          active(event.getPlayer(), "interaction");
+      }
+  
+      @EventHandler
+      public void onCommand(PlayerCommandPreprocessEvent event) {
+          active(event.getPlayer(), "commands");
+      }
+  
+      @EventHandler
+      public void onBlockBreak(BlockBreakEvent event) {
+          active(event.getPlayer(), "blocks");
+      }
+  
+      @EventHandler
+      public void onBlockPlace(BlockPlaceEvent event) {
+          active(event.getPlayer(), "blocks");
+      }
+  
+      @EventHandler
+      public void onInventoryClick(InventoryClickEvent event) {
+          HumanEntity clicker = event.getWhoClicked();
+          if (clicker instanceof Player) {
+              active((Player) clicker, "inventory");
+          }
+      }
+  }
+        │               │   └── ChatListener.java
+  package com.minestorm.status.listener;
+  
+  import com.minestorm.status.MineStormStatus;
+  import com.minestorm.status.manager.StatusType;
+  import org.bukkit.Bukkit;
+  import org.bukkit.ChatColor;
+  import org.bukkit.configuration.file.FileConfiguration;
+  import org.bukkit.entity.Player;
+  import org.bukkit.event.EventHandler;
+  import org.bukkit.event.EventPriority;
+  import org.bukkit.event.Listener;
+  import org.bukkit.event.player.AsyncPlayerChatEvent;
+  
+  import java.util.Map;
+  import java.util.UUID;
+  import java.util.regex.Pattern;
+  
+  public final class ChatListener implements Listener {
+  
+      private final MineStormStatus plugin;
+  
+      public ChatListener(MineStormStatus plugin) {
+          this.plugin = plugin;
+      }
+  
+      @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+      public void onChat(AsyncPlayerChatEvent event) {
+          FileConfiguration config = plugin.getConfig();
+          Player sender = event.getPlayer();
+  
+          if (config.getBoolean("auto-afk.activity.chat", true)) {
+              plugin.getStatusManager().recordActivity(sender);
+          }
+          if (!config.getBoolean("mention.enabled", true)) {
+              return;
+          }
+  
+          boolean alertBusy = config.getBoolean("mention.alert-busy", true);
+          boolean alertIdle = config.getBoolean("mention.alert-idle", true);
+          int flags = config.getBoolean("mention.case-sensitive", false)
+                  ? 0
+                  : Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+          String text = ChatColor.stripColor(event.getMessage());
+  
+          for (Map.Entry<UUID, StatusType> entry : plugin.getStatusManager().snapshot().entrySet()) {
+              StatusType type = entry.getValue();
+              // Away is visual only.
+              if (type == StatusType.AWAY) {
+                  continue;
+              }
+              if (type == StatusType.BUSY && !alertBusy) {
+                  continue;
+              }
+              if (type == StatusType.IDLE && !alertIdle) {
+                  continue;
+              }
+              if (entry.getKey().equals(sender.getUniqueId())) {
+                  continue;
+              }
+              Player target = Bukkit.getPlayer(entry.getKey());
+              if (target == null) {
+                  continue;
+              }
+  
+              Pattern pattern = Pattern.compile(
+                      "(?<![A-Za-z0-9_])" + Pattern.quote(target.getName()) + "(?![A-Za-z0-9_])", flags);
+              if (pattern.matcher(text).find()) {
+                  plugin.getMessages().send(sender,
+                          type == StatusType.BUSY ? "alerts.busy" : "alerts.idle",
+                          "{player}", target.getName());
+              }
+          }
+      }
+  }
+        │               ├── manager
+        │               │   ├── StatusManager.java
+  package com.minestorm.status.manager;
+  
+  import com.minestorm.status.MineStormStatus;
+  import com.minestorm.status.util.Messages;
+  import org.bukkit.Bukkit;
+  import org.bukkit.configuration.ConfigurationSection;
+  import org.bukkit.configuration.file.YamlConfiguration;
+  import org.bukkit.entity.Player;
+  
+  import java.io.File;
+  import java.io.IOException;
+  import java.util.HashMap;
+  import java.util.Map;
+  import java.util.Set;
+  import java.util.UUID;
+  import java.util.concurrent.ConcurrentHashMap;
+  
+  /**
+   * Thread-safe storage for player statuses and activity timestamps
+   * (chat events are fired asynchronously on 1.8.x - 1.19).
+   */
+  public final class StatusManager {
+  
+      private final MineStormStatus plugin;
+      private final Map<UUID, StatusType> statuses = new ConcurrentHashMap<UUID, StatusType>();
+      private final Map<UUID, Long> lastActivity = new ConcurrentHashMap<UUID, Long>();
+      private final Set<UUID> autoIdle = ConcurrentHashMap.newKeySet();
+      /** Manual statuses of players who left the server (restored when they come back). */
+      private final Map<UUID, StatusType> saved = new ConcurrentHashMap<UUID, StatusType>();
+      private final Object fileLock = new Object();
+  
+      public StatusManager(MineStormStatus plugin) {
+          this.plugin = plugin;
+      }
+  
+      // ---------------------------------------------------------------- statuses
+  
+      public StatusType getStatus(UUID id) {
+          return statuses.get(id);
+      }
+  
+      /** Manually set a status. */
+      public void setStatus(UUID id, StatusType type) {
+          autoIdle.remove(id);
+          statuses.put(id, type);
+      }
+  
+      /** Set Idle as a result of the AFK timer. */
+      public void setAutoIdle(UUID id) {
+          autoIdle.add(id);
+          statuses.put(id, StatusType.IDLE);
+      }
+  
+      public void clearStatus(UUID id) {
+          autoIdle.remove(id);
+          statuses.remove(id);
+      }
+  
+      /** Sets a status and sends the configured confirmation message + HUD. */
+      public void applyAndNotify(Player player, StatusType type) {
+          setStatus(player.getUniqueId(), type);
+          Messages messages = plugin.getMessages();
+          messages.send(player, "status.set." + type.getKey());
+          if (plugin.getConfig().getBoolean("action-bar.enabled", true)) {
+              plugin.getActionBar().send(player, messages.hud(player, type));
+          }
+      }
+  
+      /** Clears the status and sends the configured message. */
+      public void clearAndNotify(Player player) {
+          UUID id = player.getUniqueId();
+          if (getStatus(id) == null) {
+              plugin.getMessages().send(player, "status.nothing-to-clear");
+              return;
+          }
+          clearStatus(id);
+          plugin.getMessages().send(player, "status.cleared");
+          plugin.getActionBar().clear(player);
+      }
+  
+      /** Immutable copy of all active statuses. */
+      public Map<UUID, StatusType> snapshot() {
+          return new HashMap<UUID, StatusType>(statuses);
+      }
+  
+      // ---------------------------------------------------------------- activity
+  
+      /**
+       * Records activity for a player.
+       *
+       * @return how long (ms) the player was idle if an automatic Idle status was removed by this
+       *         activity (i.e. the player came back), otherwise -1
+       */
+      public long markActive(UUID id) {
+          long now = System.currentTimeMillis();
+          Long previous = lastActivity.put(id, now);
+          if (!autoIdle.remove(id)) {
+              return -1L;
+          }
+          if (plugin.getConfig().getBoolean("auto-afk.clear-idle-on-activity", true)
+                  && statuses.remove(id, StatusType.IDLE)) {
+              return previous == null ? 0L : Math.max(0L, now - previous);
+          }
+          return -1L;
+      }
+  
+      /** Records activity and handles the "player came back" messages. */
+      public void recordActivity(Player player) {
+          long idleMillis = markActive(player.getUniqueId());
+          if (idleMillis < 0) {
+              return;
+          }
+          Messages messages = plugin.getMessages();
+          if (plugin.getConfig().getBoolean("auto-afk.send-return-message", true)) {
+              messages.send(player, "afk.returned", "{time}", Messages.formatDuration(idleMillis));
+          }
+          if (plugin.getConfig().getBoolean("auto-afk.broadcast-return", false)) {
+              String text = messages.get(player, "afk.returned-broadcast", "{player}", player.getName());
+              if (!text.isEmpty()) {
+                  for (Player other : Bukkit.getOnlinePlayers()) {
+                      if (!other.getUniqueId().equals(player.getUniqueId())) {
+                          other.sendMessage(text);
+                      }
+                  }
+              }
+          }
+      }
+  
+      public long getIdleMillis(UUID id) {
+          Long last = lastActivity.get(id);
+          if (last == null) {
+              lastActivity.put(id, System.currentTimeMillis());
+              return 0L;
+          }
+          return System.currentTimeMillis() - last;
+      }
+  
+      // ------------------------------------------------------ join / quit / saving
+  
+      /** Called when a player leaves: remembers a manual status, forgets everything else. */
+      public void handleQuit(UUID id) {
+          StatusType status = statuses.get(id);
+          if (status != null && !autoIdle.contains(id)) {
+              saved.put(id, status);
+          } else {
+              saved.remove(id);
+          }
+          statuses.remove(id);
+          lastActivity.remove(id);
+          autoIdle.remove(id);
+  
+          if (plugin.isEnabled()) {
+              Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+                  @Override
+                  public void run() {
+                      save();
+                  }
+              });
+          }
+      }
+  
+      /** Restores the status a player had when they left. Returns it, or null if none. */
+      public StatusType restoreSaved(UUID id) {
+          StatusType type = saved.remove(id);
+          if (type != null) {
+              statuses.put(id, type);
+          }
+          return type;
+      }
+  
+      public void load() {
+          File file = new File(plugin.getDataFolder(), "data.yml");
+          if (!file.exists()) {
+              return;
+          }
+          YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
+          ConfigurationSection section = yaml.getConfigurationSection("statuses");
+          if (section == null) {
+              return;
+          }
+          for (String key : section.getKeys(false)) {
+              try {
+                  saved.put(UUID.fromString(key), StatusType.valueOf(section.getString(key, "").toUpperCase()));
+              } catch (IllegalArgumentException ignored) {
+                  // invalid entry, skip it
+              }
+          }
+      }
+  
+      public void save() {
+          synchronized (fileLock) {
+              YamlConfiguration yaml = new YamlConfiguration();
+              for (Map.Entry<UUID, StatusType> entry : new HashMap<UUID, StatusType>(saved).entrySet()) {
+                  yaml.set("statuses." + entry.getKey(), entry.getValue().name());
+              }
+              try {
+                  yaml.save(new File(plugin.getDataFolder(), "data.yml"));
+              } catch (IOException ex) {
+                  plugin.getLogger().warning("Could not save data.yml: " + ex.getMessage());
+              }
+          }
+      }
+  
+      /** Called on plugin disable: keeps manual statuses of online players and writes data.yml. */
+      public void shutdown() {
+          for (Map.Entry<UUID, StatusType> entry : statuses.entrySet()) {
+              if (!autoIdle.contains(entry.getKey())) {
+                  saved.put(entry.getKey(), entry.getValue());
+              }
+          }
+          save();
+      }
+  }
+        │               │   └── StatusType.java
+  package com.minestorm.status.manager;
+  
+  public enum StatusType {
+      BUSY("busy"),
+      IDLE("idle"),
+      AWAY("away");
+  
+      private final String key;
+  
+      StatusType(String key) {
+          this.key = key;
+      }
+  
+      public String getKey() {
+          return key;
+      }
+  }
+        │               ├── task
+        │               │   ├── ActionBarTask.java
+  package com.minestorm.status.task;
+  
+  import com.minestorm.status.MineStormStatus;
+  import com.minestorm.status.manager.StatusType;
+  import org.bukkit.Bukkit;
+  import org.bukkit.entity.Player;
+  import org.bukkit.scheduler.BukkitRunnable;
+  
+  import java.util.HashSet;
+  import java.util.Iterator;
+  import java.util.Set;
+  import java.util.UUID;
+  
+  /** Re-sends the action bar HUD so it stays visible while a status is active. */
+  public final class ActionBarTask extends BukkitRunnable {
+  
+      private final MineStormStatus plugin;
+      private final Set<UUID> shown = new HashSet<UUID>();
+  
+      public ActionBarTask(MineStormStatus plugin) {
+          this.plugin = plugin;
+      }
+  
+      @Override
+      public void run() {
+          for (Player player : Bukkit.getOnlinePlayers()) {
+              UUID id = player.getUniqueId();
+              StatusType status = plugin.getStatusManager().getStatus(id);
+              if (status != null) {
+                  plugin.getActionBar().send(player, plugin.getMessages().hud(player, status));
+                  shown.add(id);
+              } else if (shown.remove(id)) {
+                  plugin.getActionBar().clear(player);
+              }
+          }
+          Iterator<UUID> iterator = shown.iterator();
+          while (iterator.hasNext()) {
+              if (Bukkit.getPlayer(iterator.next()) == null) {
+                  iterator.remove();
+              }
+          }
+      }
+  }
+        │               │   └── AutoAfkTask.java
+  package com.minestorm.status.task;
+  
+  import com.minestorm.status.MineStormStatus;
+  import com.minestorm.status.manager.StatusManager;
+  import com.minestorm.status.manager.StatusType;
+  import org.bukkit.Bukkit;
+  import org.bukkit.configuration.file.FileConfiguration;
+  import org.bukkit.entity.Player;
+  import org.bukkit.scheduler.BukkitRunnable;
+  
+  import java.util.UUID;
+  
+  /** Switches inactive players to Idle after the configured timeout. */
+  public final class AutoAfkTask extends BukkitRunnable {
+  
+      private final MineStormStatus plugin;
+  
+      public AutoAfkTask(MineStormStatus plugin) {
+          this.plugin = plugin;
+      }
+  
+      @Override
+      public void run() {
+          FileConfiguration config = plugin.getConfig();
+          StatusManager manager = plugin.getStatusManager();
+          long timeoutSeconds = Math.max(1L, config.getLong("auto-afk.idle-timeout-seconds", 300L));
+          long timeoutMillis = timeoutSeconds * 1000L;
+          boolean override = config.getBoolean("auto-afk.override-existing-status", false);
+          boolean sendMessage = config.getBoolean("auto-afk.send-message", true);
+          boolean actionBar = config.getBoolean("action-bar.enabled", true);
+  
+          for (Player player : Bukkit.getOnlinePlayers()) {
+              if (player.hasPermission("minestormstatus.afk.bypass")) {
+                  continue;
+              }
+              UUID id = player.getUniqueId();
+              StatusType current = manager.getStatus(id);
+              boolean eligible = current == null || (override && current != StatusType.IDLE);
+              if (!eligible || manager.getIdleMillis(id) < timeoutMillis) {
+                  continue;
+              }
+  
+              manager.setAutoIdle(id);
+              if (sendMessage) {
+                  plugin.getMessages().send(player, "afk.now-idle", "{seconds}", String.valueOf(timeoutSeconds));
+              }
+              if (actionBar) {
+                  plugin.getActionBar().send(player, plugin.getMessages().hud(player, StatusType.IDLE));
+              }
+          }
+      }
+  }
+        │               └── util
+        │                   ├── ActionBar.java
+  package com.minestorm.status.util;
+  
+  import com.minestorm.status.MineStormStatus;
+  import org.bukkit.Bukkit;
+  import org.bukkit.entity.Player;
+  
+  import java.lang.reflect.Array;
+  import java.lang.reflect.Constructor;
+  import java.lang.reflect.Field;
+  import java.lang.reflect.Method;
+  
+  /**
+   * Sends action bar text on every server version without Adventure:
+   * - Spigot/Paper 1.9+ : Player.Spigot#sendMessage(ChatMessageType.ACTION_BAR, ...)
+   * - 1.8.x             : PacketPlayOutChat (type 2) via reflection
+   */
+  public final class ActionBar {
+  
+      private final MineStormStatus plugin;
+      private boolean ready;
+      private boolean modern;
+      private boolean warned;
+  
+      // modern (1.9+)
+      private Object actionBarType;
+      private Method fromLegacyText;
+      private Method spigotSend;
+  
+      // legacy (1.8.x NMS)
+      private Method getHandle;
+      private Field connectionField;
+      private Method sendPacket;
+      private Method serialize;
+      private Constructor<?> packetConstructor;
+  
+      public ActionBar(MineStormStatus plugin) {
+          this.plugin = plugin;
+          try {
+              initModern();
+              modern = true;
+              ready = true;
+              return;
+          } catch (Throwable ignored) {
+              // not a 1.9+ server, try 1.8.x
+          }
+          try {
+              initLegacy();
+              ready = true;
+          } catch (Throwable t) {
+              plugin.getLogger().warning("Action bar is not supported on this server version: " + t);
+          }
+      }
+  
+      private void initModern() throws Exception {
+          Class<?> type = Class.forName("net.md_5.bungee.api.ChatMessageType");
+          Class<?> text = Class.forName("net.md_5.bungee.api.chat.TextComponent");
+          Class<?> base = Class.forName("net.md_5.bungee.api.chat.BaseComponent");
+          actionBarType = type.getField("ACTION_BAR").get(null);
+          fromLegacyText = text.getMethod("fromLegacyText", String.class);
+          Class<?> baseArray = Array.newInstance(base, 0).getClass();
+          spigotSend = Player.Spigot.class.getMethod("sendMessage", type, baseArray);
+      }
+  
+      private void initLegacy() throws Exception {
+          String pkg = Bukkit.getServer().getClass().getPackage().getName();
+          String version = pkg.substring(pkg.lastIndexOf('.') + 1);
+          String nms = "net.minecraft.server." + version + ".";
+  
+          Class<?> craftPlayer = Class.forName("org.bukkit.craftbukkit." + version + ".entity.CraftPlayer");
+          getHandle = craftPlayer.getMethod("getHandle");
+          connectionField = Class.forName(nms + "EntityPlayer").getField("playerConnection");
+          Class<?> packet = Class.forName(nms + "Packet");
+          sendPacket = connectionField.getType().getMethod("sendPacket", packet);
+          Class<?> component = Class.forName(nms + "IChatBaseComponent");
+          serialize = Class.forName(nms + "IChatBaseComponent$ChatSerializer").getMethod("a", String.class);
+          packetConstructor = Class.forName(nms + "PacketPlayOutChat").getConstructor(component, byte.class);
+      }
+  
+      public void send(Player player, String text) {
+          if (!ready || player == null || text == null) {
+              return;
+          }
+          try {
+              if (modern) {
+                  Object components = fromLegacyText.invoke(null, text);
+                  spigotSend.invoke(player.spigot(), actionBarType, components);
+              } else {
+                  Object handle = getHandle.invoke(player);
+                  Object connection = connectionField.get(handle);
+                  Object component = serialize.invoke(null, "{\"text\":\"" + escape(text) + "\"}");
+                  Object packet = packetConstructor.newInstance(component, (byte) 2);
+                  sendPacket.invoke(connection, packet);
+              }
+          } catch (Throwable t) {
+              if (!warned) {
+                  warned = true;
+                  plugin.getLogger().warning("Could not send action bar: " + t);
+              }
+          }
+      }
+  
+      public void clear(Player player) {
+          send(player, " ");
+      }
+  
+      private static String escape(String text) {
+          return text.replace("\\", "\\\\").replace("\"", "\\\"");
+      }
+  }
+        │                   ├── Colors.java
+  package com.minestorm.status.util;
+  
+  import org.bukkit.ChatColor;
+  
+  import java.util.regex.Matcher;
+  import java.util.regex.Pattern;
+  
+  /** Translates "&amp;" color codes and "&amp;#RRGGBB" hex colors (works on 1.8.8 and newer). */
+  public final class Colors {
+  
+      private static final Pattern HEX = Pattern.compile("&#([A-Fa-f0-9]{6})");
+      private static final boolean HEX_SUPPORTED = detectHex();
+  
+      private static final char[] CODES = "0123456789abcdef".toCharArray();
+      private static final int[] RGB = {
+              0x000000, 0x0000AA, 0x00AA00, 0x00AAAA, 0xAA0000, 0xAA00AA, 0xFFAA00, 0xAAAAAA,
+              0x555555, 0x5555FF, 0x55FF55, 0x55FFFF, 0xFF5555, 0xFF55FF, 0xFFFF55, 0xFFFFFF
+      };
+  
+      private Colors() {
+      }
+  
+      private static boolean detectHex() {
+          try {
+              Class.forName("net.md_5.bungee.api.ChatColor").getMethod("of", String.class);
+              return true;
+          } catch (Throwable ignored) {
+              return false;
+          }
+      }
+  
+      public static String translate(String text) {
+          if (text == null) {
+              return "";
+          }
+          Matcher matcher = HEX.matcher(text);
+          StringBuffer buffer = new StringBuffer();
+          while (matcher.find()) {
+              matcher.appendReplacement(buffer, Matcher.quoteReplacement(hex(matcher.group(1))));
+          }
+          matcher.appendTail(buffer);
+          return ChatColor.translateAlternateColorCodes('&', buffer.toString());
+      }
+  
+      private static String hex(String rrggbb) {
+          char c = ChatColor.COLOR_CHAR;
+          if (HEX_SUPPORTED) {
+              StringBuilder sb = new StringBuilder().append(c).append('x');
+              for (char ch : rrggbb.toCharArray()) {
+                  sb.append(c).append(ch);
+              }
+              return sb.toString();
+          }
+          // Older servers: use the nearest of the 16 classic colors.
+          int r = Integer.parseInt(rrggbb.substring(0, 2), 16);
+          int g = Integer.parseInt(rrggbb.substring(2, 4), 16);
+          int b = Integer.parseInt(rrggbb.substring(4, 6), 16);
+          int best = 0;
+          long bestDistance = Long.MAX_VALUE;
+          for (int i = 0; i < RGB.length; i++) {
+              int dr = r - ((RGB[i] >> 16) & 0xFF);
+              int dg = g - ((RGB[i] >> 8) & 0xFF);
+              int db = b - (RGB[i] & 0xFF);
+              long distance = (long) dr * dr + (long) dg * dg + (long) db * db;
+              if (distance < bestDistance) {
+                  bestDistance = distance;
+                  best = i;
+              }
+          }
+          return String.valueOf(c) + CODES[best];
+      }
+  }
+        │                   └── Messages.java
+  package com.minestorm.status.util;
+  
+  import com.minestorm.status.MineStormStatus;
+  import com.minestorm.status.manager.StatusType;
+  import org.bukkit.Bukkit;
+  import org.bukkit.command.CommandSender;
+  import org.bukkit.configuration.InvalidConfigurationException;
+  import org.bukkit.configuration.file.FileConfiguration;
+  import org.bukkit.configuration.file.YamlConfiguration;
+  import org.bukkit.entity.Player;
+  
+  import java.io.File;
+  import java.io.FileInputStream;
+  import java.io.IOException;
+  import java.io.InputStream;
+  import java.io.InputStreamReader;
+  import java.io.Reader;
+  import java.lang.reflect.Method;
+  import java.nio.charset.StandardCharsets;
+  import java.util.ArrayList;
+  import java.util.List;
+  
+  /**
+   * Loads messages.yml (legacy &amp; colors, &amp;#RRGGBB hex, {placeholders}, optional PlaceholderAPI).
+   * The jar's copy is used as fallback for missing keys, so updates never break existing files.
+   */
+  public final class Messages {
+  
+      private final MineStormStatus plugin;
+      private volatile FileConfiguration messages = new YamlConfiguration();
+  
+      private boolean papiChecked;
+      private Method papiMethod;
+  
+      public Messages(MineStormStatus plugin) {
+          this.plugin = plugin;
+          reload();
+      }
+  
+      public void reload() {
+          File file = new File(plugin.getDataFolder(), "messages.yml");
+          if (!file.exists()) {
+              plugin.saveResource("messages.yml", false);
+          }
+  
+          YamlConfiguration loaded = new YamlConfiguration();
+          try (Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
+              loaded.load(reader);
+          } catch (IOException | InvalidConfigurationException ex) {
+              plugin.getLogger().warning("Could not read messages.yml, using defaults: " + ex.getMessage());
+          }
+  
+          try (InputStream in = plugin.getResource("messages.yml")) {
+              if (in != null) {
+                  YamlConfiguration defaults = new YamlConfiguration();
+                  defaults.load(new InputStreamReader(in, StandardCharsets.UTF_8));
+                  loaded.setDefaults(defaults);
+              }
+          } catch (IOException | InvalidConfigurationException ex) {
+              plugin.getLogger().warning("Could not read default messages.yml: " + ex.getMessage());
+          }
+          this.messages = loaded;
+      }
+  
+      // ------------------------------------------------------------------ building
+  
+      private String process(Player player, String text, String... replacements) {
+          text = text.replace("{prefix}", messages.getString("prefix", ""));
+          for (int i = 0; i + 1 < replacements.length; i += 2) {
+              text = text.replace(replacements[i], replacements[i + 1]);
+          }
+          if (player != null) {
+              text = applyPlaceholderApi(player, text);
+          }
+          return Colors.translate(text);
+      }
+  
+      private String raw(String key) {
+          String value = messages.getString(key);
+          return value != null ? value : "&cMissing message: " + key;
+      }
+  
+      /** Message with colors + {placeholders} applied. Replacements are pairs: "{key}", "value". */
+      public String get(String key, String... replacements) {
+          return process(null, raw(key), replacements);
+      }
+  
+      /** Same as above, plus PlaceholderAPI for the given player. */
+      public String get(Player player, String key, String... replacements) {
+          return process(player, raw(key), replacements);
+      }
+  
+      public List<String> list(String key, String... replacements) {
+          List<String> result = new ArrayList<String>();
+          for (String line : messages.getStringList(key)) {
+              result.add(process(null, line, replacements));
+          }
+          return result;
+      }
+  
+      public String hud(Player player, StatusType type) {
+          return get(player, "hud." + type.getKey());
+      }
+  
+      /** Colored status name from "status-names". */
+      public String statusName(StatusType type) {
+          return get("status-names." + type.getKey());
+      }
+  
+      // ------------------------------------------------------------------- sending
+  
+      /** Sends a message. An empty message is not sent. */
+      public void send(CommandSender sender, String key, String... replacements) {
+          String text = sender instanceof Player
+                  ? get((Player) sender, key, replacements)
+                  : get(key, replacements);
+          if (!text.isEmpty()) {
+              sender.sendMessage(text);
+          }
+      }
+  
+      public void sendList(CommandSender sender, String key, String... replacements) {
+          for (String line : list(key, replacements)) {
+              if (!line.isEmpty()) {
+                  sender.sendMessage(line);
+              }
+          }
+      }
+  
+      // ------------------------------------------------------------------- helpers
+  
+      private String applyPlaceholderApi(Player player, String text) {
+          if (!plugin.getConfig().getBoolean("use-placeholderapi", true) || !Bukkit.isPrimaryThread()) {
+              return text;
+          }
+          if (!papiChecked) {
+              papiChecked = true;
+              if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+                  try {
+                      papiMethod = Class.forName("me.clip.placeholderapi.PlaceholderAPI")
+                              .getMethod("setPlaceholders", Player.class, String.class);
+                  } catch (Throwable ignored) {
+                      papiMethod = null;
+                  }
+              }
+          }
+          if (papiMethod == null) {
+              return text;
+          }
+          try {
+              Object result = papiMethod.invoke(null, player, text);
+              return result instanceof String ? (String) result : text;
+          } catch (Throwable ignored) {
+              return text;
+          }
+      }
+  
+      /** 3725000 ms -> "1h 2m", 312000 ms -> "5m 12s", 8000 ms -> "8s". */
+      public static String formatDuration(long millis) {
+          long totalSeconds = Math.max(0L, millis / 1000L);
+          long hours = totalSeconds / 3600L;
+          long minutes = (totalSeconds % 3600L) / 60L;
+          long seconds = totalSeconds % 60L;
+          if (hours > 0) {
+              return hours + "h " + minutes + "m";
+          }
+          if (minutes > 0) {
+              return minutes + "m " + seconds + "s";
+          }
+          return seconds + "s";
+      }
+  }
+        └── resources
+            ├── config.yml
+  # ============================================================
+  #  MineStormStatus - config.yml   (Created by Muvixo)
+  #  All texts live in messages.yml.
+  #  Use /minestormstatus reload to apply changes.
+  # ============================================================
+  config-version: 2
+  
+  # Replace %placeholders% from PlaceholderAPI in messages (needs PlaceholderAPI installed).
+  use-placeholderapi: true
+  
+  auto-afk:
+    enabled: true
+    # Seconds of inactivity before a player is switched to Idle (300 = 5 minutes).
+    idle-timeout-seconds: 300
+    # How often (in ticks) inactivity is checked. 20 ticks = 1 second.
+    check-interval-ticks: 20
+    # true  = players with a manual Busy/Away status are also switched to Idle.
+    # false = only players with NO status are switched to Idle.
+    override-existing-status: false
+    # Remove the automatic Idle status when the player becomes active again (comes back).
+    clear-idle-on-activity: true
+    # Send "afk.now-idle" when a player is switched to Idle.
+    send-message: true
+    # Send "afk.returned" to the player when they come back.
+    send-return-message: true
+    # Tell everyone else ("afk.returned-broadcast") when a player comes back.
+    broadcast-return: false
+    # Which actions count as activity (reset the inactivity timer).
+    activity:
+      movement: true
+      # Turning the camera without moving.
+      rotation: true
+      interaction: true
+      chat: true
+      commands: true
+      inventory: true
+      blocks: true
+  
+  join:
+    # Send "join.welcome-back" to players who join again (not on their first join).
+    welcome-back: true
+    # Restore the manual status (Busy/Idle/Away) a player had when they left the server.
+    restore-status: true
+  
+  action-bar:
+    enabled: true
+    # How often (in ticks) the HUD is re-sent. Keep it at 40 or lower so it never flickers.
+    update-interval-ticks: 20
+  
+  mention:
+    enabled: true
+    # false: "steve", "Steve" and "STEVE" all count as a mention of Steve.
+    case-sensitive: false
+    # Send an alert to the tagger when the tagged player is Busy / Idle.
+    alert-busy: true
+    alert-idle: true
+            ├── messages.yml
+  # ============================================================
+  #  MineStormStatus - messages.yml   (Created by Muvixo)
+  #
+  #  COLORS
+  #    &0-&9 &a-&f  colors      &l bold  &o italic  &n underline  &m strike  &k magic  &r reset
+  #    &#RRGGBB     hex color (1.16+ servers; older servers use the nearest classic color)
+  #
+  #  PLACEHOLDERS
+  #    {prefix}   the "prefix" below (put it in any message you want prefixed)
+  #    {player}   player name   (alerts.*, afk.returned-broadcast, join.welcome-back)
+  #    {status}   status name   (join.status-restored)
+  #    {seconds}  idle timeout in seconds (afk.now-idle)
+  #    {time}     how long the player was idle (afk.returned)
+  #    {version}  plugin version (commands.info)
+  #    PlaceholderAPI placeholders also work if PlaceholderAPI is installed.
+  #
+  #  An empty message ('') is not sent at all.
+  #  Use /minestormstatus reload after editing.
+  # ============================================================
+  config-version: 2
+  
+  prefix: '&8[&b&lMineStormStatus&8] &r'
+  
+  general:
+    players-only: '{prefix}&cOnly players can use this command.'
+    no-permission: '{prefix}&cYou do not have permission to do that.'
+  
+  status-names:
+    busy: '&c&lBusy'
+    idle: '&e&lIdle'
+    away: '&7&lAway'
+  
+  status:
+    usage: '{prefix}&cUsage: &f/status [busy|idle|away|clear]'
+    set:
+      busy: '{prefix}&7Your status is now &c&lBusy&7.'
+      idle: '{prefix}&7Your status is now &e&lIdle&7.'
+      away: '{prefix}&7Your status is now &7&lAway&7.'
+    cleared: '{prefix}&7Your status has been cleared.'
+    nothing-to-clear: '{prefix}&7You do not have an active status.'
+  
+  alerts:
+    busy: '{prefix}&cThis player is currently busy and cannot respond right now.'
+    idle: '{prefix}&eThis player is currently idle and cannot respond right now.'
+  
+  afk:
+    now-idle: '{prefix}&eYou are currently idle.'
+    returned: '{prefix}&aYou are no longer idle. &7(Idle for &f{time}&7)'
+    returned-broadcast: '{prefix}&f{player} &7is back and no longer idle.'
+  
+  join:
+    welcome-back: '{prefix}&aWelcome back, &f{player}&a!'
+    status-restored: '{prefix}&7Your status was restored to {status}&7.'
+  
+  # Action bar HUD (no prefix on purpose)
+  hud:
+    idle: '&fYou are currently &e&lIDLE'
+    busy: '&fYou are currently &c&lBusy'
+    away: '&fYou are currently &7&laway'
+  
+  commands:
+    usage: '{prefix}&cUsage: &f/minestormstatus [help|busy|idle|away|clear|creator|info|reload]'
+    unknown: '{prefix}&cUnknown subcommand. Use &f/minestormstatus help&c.'
+    creator: '{prefix}&7Created by &6&lMuvixo'
+    info: '{prefix}&7Running &bMineStormStatus v{version} &8| &7Created by &6Muvixo'
+    reload-success: '{prefix}&aConfiguration and messages reloaded.'
+    help:
+      - '{prefix}&6&lMineStormStatus Help'
+      - '&e/status [busy|idle|away|clear] &7- Set or clear your status'
+      - '&e/minestormstatus busy|idle|away|clear &7- Same as /status'
+      - '&e/minestormstatus creator &7- Show the creator'
+      - '&e/minestormstatus info &7- Show plugin version'
+      - '&e/minestormstatus reload &7- Reload config.yml and messages.yml'
+            └── plugin.yml
+  name: MineStormStatus
+  version: 1.0.0
+  main: com.minestorm.status.MineStormStatus
+  api-version: '1.13'
+  description: Player status (Busy/Idle/Away), auto-AFK and action bar HUD.
+  author: Muvixo
+  softdepend: [PlaceholderAPI]
+  
+  commands:
+    status:
+      description: Set or clear your status.
+      usage: '/status [busy|idle|away|clear]'
+    minestormstatus:
+      description: MineStormStatus main command.
+      usage: '/minestormstatus [help|busy|idle|away|clear|creator|info|reload]'
+      aliases: [mss]
+  
+  permissions:
+    minestormstatus.use:
+      description: Allows setting/clearing your status.
+      default: true
+    minestormstatus.command:
+      description: Allows /minestormstatus (help, creator, info).
+      default: true
+    minestormstatus.reload:
+      description: Allows /minestormstatus reload.
+      default: op
+    minestormstatus.afk.bypass:
+      description: Exempts the player from automatic AFK/idle detection.
+      default: false

@@ -1,0 +1,2021 @@
+C:\Users\nasle javan\Downloads\SexToPlay\Logs-main\Logs-main/
+
+├── .github
+│   └── workflows
+│       └── build.yml
+  name: Build Plugins
+  
+  on:
+    push:
+      branches: [ main, master ]
+    pull_request:
+      branches: [ main, master ]
+    workflow_dispatch:
+  
+  jobs:
+    build:
+      runs-on: ubuntu-latest
+  
+      steps:
+        - uses: actions/checkout@v4
+  
+        - name: Set up JDK 17
+          uses: actions/setup-java@v4
+          with:
+            distribution: temurin
+            java-version: '17'
+            cache: maven
+  
+        - name: Build all modules
+          run: mvn -B clean package --file pom.xml
+  
+        - name: Upload Velocity plugin
+          uses: actions/upload-artifact@v4
+          with:
+            name: velocity-logs-velocity
+            path: velocity-plugin/target/velocity-logs-velocity-*.jar
+            if-no-files-found: error
+  
+        - name: Upload Spigot plugin
+          uses: actions/upload-artifact@v4
+          with:
+            name: velocity-logs-spigot
+            path: spigot-plugin/target/velocity-logs-spigot-*.jar
+            if-no-files-found: error
+├── .gitignore
+  target/
+  .idea/
+  *.iml
+  *.log
+  .DS_Store
+  .vscode/
+├── LICENSE
+  MIT License
+  
+  Copyright (c) 2024 muvixo
+  
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+  
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+  
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+├── README.md
+  # VelocityLogs v2.0
+  
+  Logs **every command** any player types on any backend server and broadcasts
+  them to staff / OP players on the Velocity proxy.
+  
+  **Author:** muvixo
+  
+  ## What's new in v2.0
+  
+  - **Bulletproof OP detection** — OP status is attached to *every* command,
+    so it works even if the join message got lost.
+  - **UUID-based tracking** — no more name-change or case bugs.
+  - **`/logs op <player>` / `/logs unop <player>`** — manual overrides.
+  - **`/logs list`** — see all currently tracked OPs.
+  - **`force-see-players`** — a config list of players who always see logs.
+  
+  ## Commands (Velocity)
+  
+  | Command | Description |
+  |---------|-------------|
+  | `/logs` | Show plugin info |
+  | `/logs help` | Show help |
+  | `/logs reload` | Reload config |
+  | `/logs debug <player>` | Diagnose a player's permissions |
+  | `/logs status <player>` | Same as debug |
+  | `/logs op <player>` | Manually mark player as OP |
+  | `/logs unop <player>` | Manually unmark player |
+  | `/logs list` | List all tracked OPs |
+  
+  ## Build
+  
+  ```bash
+  mvn clean package
+  ```
+  
+  Outputs:
+  - `velocity-plugin/target/velocity-logs-velocity-2.0.0.jar`
+  - `spigot-plugin/target/velocity-logs-spigot-2.0.0.jar`
+├── ee.py
+  import os
+  
+  def print_tree(folder_path, file_handle, prefix="", show_content=False):
+      entries = sorted(os.listdir(folder_path))
+      for i, entry in enumerate(entries):
+          path = os.path.join(folder_path, entry)
+          is_last = i == len(entries) - 1
+          connector = "└── " if is_last else "├── "
+          file_handle.write(f"{prefix}{connector}{entry}\n")
+  
+          if os.path.isdir(path):
+              extension_prefix = "    " if is_last else "│   "
+              print_tree(path, file_handle, prefix + extension_prefix, show_content)
+          else:
+              if show_content:
+                  try:
+                      with open(path, "r", encoding="utf-8") as f:
+                          content = f.read().strip()
+                          if content:
+                              content_lines = content.splitlines()
+                              # Content appears directly under the file name
+                              for line in content_lines:
+                                  file_handle.write(f"  {line}\n")  # Just 2 spaces
+                  except Exception as e:
+                      file_handle.write(f"  [Error: {e}]\n")
+  
+  def save_tree_to_file(output_filename="folder_structure.txt"):
+      current_folder = os.path.dirname(os.path.abspath(__file__))
+      
+      with open(output_filename, "w", encoding="utf-8") as f:
+          f.write(f"{current_folder}/\n\n")
+          print_tree(current_folder, f, show_content=True)
+      
+      print(f"Output saved to {output_filename}")
+  
+  if __name__ == "__main__":
+      save_tree_to_file()
+├── folder_structure.txt
+├── pom.xml
+  <?xml version="1.0" encoding="UTF-8"?>
+  <project xmlns="http://maven.apache.org/POM/4.0.0"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                               http://maven.apache.org/xsd/maven-4.0.0.xsd">
+      <modelVersion>4.0.0</modelVersion>
+  
+      <groupId>ir.muvixo</groupId>
+      <artifactId>velocity-logs-parent</artifactId>
+      <version>2.0.0</version>
+      <packaging>pom</packaging>
+      <name>VelocityLogs Parent</name>
+  
+      <modules>
+          <module>velocity-plugin</module>
+          <module>spigot-plugin</module>
+      </modules>
+  
+      <properties>
+          <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+          <maven.compiler.source>17</maven.compiler.source>
+          <maven.compiler.target>17</maven.compiler.target>
+      </properties>
+  
+      <repositories>
+          <repository>
+              <id>papermc</id>
+              <url>https://repo.papermc.io/repository/maven-public/</url>
+          </repository>
+          <repository>
+              <id>spigotmc-repo</id>
+              <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+          </repository>
+          <repository>
+              <id>sonatype</id>
+              <url>https://oss.sonatype.org/content/groups/public/</url>
+          </repository>
+          <repository>
+              <id>codemc</id>
+              <url>https://repo.codemc.io/repository/maven-public/</url>
+          </repository>
+      </repositories>
+  
+      <build>
+          <pluginManagement>
+              <plugins>
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-compiler-plugin</artifactId>
+                      <version>3.11.0</version>
+                  </plugin>
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-shade-plugin</artifactId>
+                      <version>3.5.1</version>
+                  </plugin>
+              </plugins>
+          </pluginManagement>
+      </build>
+  </project>
+├── spigot-plugin
+│   ├── pom.xml
+  <?xml version="1.0" encoding="UTF-8"?>
+  <project xmlns="http://maven.apache.org/POM/4.0.0">
+      <modelVersion>4.0.0</modelVersion>
+  
+      <parent>
+          <groupId>ir.muvixo</groupId>
+          <artifactId>velocity-logs-parent</artifactId>
+          <version>2.0.0</version>
+      </parent>
+  
+      <artifactId>velocity-logs-spigot</artifactId>
+      <packaging>jar</packaging>
+      <name>VelocityLogs (Spigot 1.8)</name>
+  
+      <dependencies>
+          <dependency>
+              <groupId>org.spigotmc</groupId>
+              <artifactId>spigot-api</artifactId>
+              <version>1.8.8-R0.1-SNAPSHOT</version>
+              <scope>provided</scope>
+              <exclusions>
+                  <!-- Broken transitive dependency that no longer exists on any repo -->
+                  <exclusion>
+                      <groupId>net.md-5</groupId>
+                      <artifactId>bungeecord-chat</artifactId>
+                  </exclusion>
+              </exclusions>
+          </dependency>
+      </dependencies>
+  
+      <build>
+          <finalName>${project.artifactId}-${project.version}</finalName>
+          <resources>
+              <resource>
+                  <directory>src/main/resources</directory>
+                  <filtering>true</filtering>
+                  <includes>
+                      <include>plugin.yml</include>
+                  </includes>
+              </resource>
+              <resource>
+                  <directory>src/main/resources</directory>
+                  <filtering>false</filtering>
+                  <excludes>
+                      <exclude>plugin.yml</exclude>
+                  </excludes>
+              </resource>
+          </resources>
+          <plugins>
+              <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-compiler-plugin</artifactId>
+                  <configuration>
+                      <source>1.8</source>
+                      <target>1.8</target>
+                  </configuration>
+              </plugin>
+          </plugins>
+      </build>
+  </project>
+│   └── src
+│       └── main
+│           ├── java
+│           │   └── ir
+│           │       └── muvixo
+│           │           └── logs
+│           │               └── spigot
+│           │                   ├── CommandInterceptor.java
+  package ir.muvixo.logs.spigot;
+  
+  import com.google.common.io.ByteArrayDataOutput;
+  import com.google.common.io.ByteStreams;
+  import org.bukkit.entity.Player;
+  import org.bukkit.event.EventHandler;
+  import org.bukkit.event.EventPriority;
+  import org.bukkit.event.Listener;
+  import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+  import org.bukkit.event.player.PlayerJoinEvent;
+  import org.bukkit.event.player.PlayerQuitEvent;
+  
+  /**
+   * Intercepts EVERY command a player types (even unknown ones, even ones
+   * that will be cancelled by other plugins) and forwards them to Velocity.
+   *
+   * v2.2 - Uses ignoreCancelled = false so cancelled/unknown commands still
+   * get logged. Every command is reported together with the current OP status
+   * so the proxy never keeps a stale OP entry.
+   *
+   * @author muvixo
+   */
+  public class CommandInterceptor implements Listener {
+  
+      private final SpigotLogs plugin;
+      private final Config config;
+  
+      public CommandInterceptor(SpigotLogs plugin, Config config) {
+          this.plugin = plugin;
+          this.config = config;
+      }
+  
+      @EventHandler(priority = EventPriority.MONITOR)
+      public void onJoin(PlayerJoinEvent event) {
+          if (!config.isReportOpStatus()) return;
+          Player player = event.getPlayer();
+          plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+              if (player.isOnline()) {
+                  plugin.sendOpStatus(player, player.isOp());
+              }
+          }, 20L);
+      }
+  
+      @EventHandler(priority = EventPriority.MONITOR)
+      public void onQuit(PlayerQuitEvent event) {
+          if (!config.isReportOpStatus()) return;
+          plugin.sendOpStatus(event.getPlayer(), false);
+      }
+  
+      /**
+       * IMPORTANT:
+       *   priority         = MONITOR      -> runs after every other plugin
+       *   ignoreCancelled  = false        -> we still see commands other plugins cancelled
+       *
+       * This makes us catch:
+       *   - valid commands
+       *   - invalid/unknown commands
+       *   - commands blocked by other plugins
+       *   - commands the player lacks permission for
+       *
+       * Basically anything the client sends that starts with "/".
+       */
+      @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
+      public void onCommand(PlayerCommandPreprocessEvent event) {
+  
+          if (!plugin.isForwardingEnabled()) return;
+  
+          Player player = event.getPlayer();
+  
+          // Always sync the current OP status first (clears stale entries).
+          if (config.isReportOpStatus()) {
+              plugin.sendOpStatus(player, player.isOp());
+          }
+  
+          // Config filters (optional)
+          if (!config.isLogOps() && player.isOp()) return;
+          if (config.isIgnoredPlayer(player.getName())) return;
+  
+          String full = event.getMessage();
+          if (full == null || full.isEmpty()) return;
+  
+          // Must start with "/"
+          if (full.charAt(0) != '/') return;
+  
+          String command = full.substring(1).trim();
+          if (command.isEmpty()) return;
+  
+          // Do not forward our own local helper command
+          String base = command.split(" ", 2)[0].toLowerCase();
+          if (base.equals("vlogs") || base.equals("velogs") || base.equals("velocitylogs")) return;
+  
+          // Blacklist check (optional)
+          if (config.isBlacklisted(command)) return;
+  
+          try {
+              ByteArrayDataOutput out = ByteStreams.newDataOutput();
+              out.writeUTF("CMD");
+              out.writeUTF(player.getUniqueId().toString());
+              out.writeUTF(player.getName());
+              out.writeUTF(config.getServerName());
+              out.writeUTF(Boolean.toString(player.isOp()));
+              out.writeUTF(command);
+              player.sendPluginMessage(plugin, config.getChannel(), out.toByteArray());
+  
+              if (plugin.isDebugEnabled()) {
+                  plugin.getLogger().info("[DEBUG] Forwarded: " + player.getName()
+                          + " (op=" + player.isOp() + ") -> /" + command);
+              }
+          } catch (Exception e) {
+              plugin.getLogger().warning("Failed to forward command: " + e.getMessage());
+          }
+      }
+  }
+│           │                   ├── Config.java
+  package ir.muvixo.logs.spigot;
+  
+  import org.bukkit.configuration.file.FileConfiguration;
+  
+  import java.util.ArrayList;
+  import java.util.List;
+  import java.util.Locale;
+  import java.util.stream.Collectors;
+  
+  /**
+   * Config wrapper for SpigotLogs v2.0.
+   *
+   * @author muvixo
+   */
+  public class Config {
+  
+      private final SpigotLogs plugin;
+  
+      private String channel;
+      private String serverName;
+      private boolean logOps;
+      private boolean reportOpStatus;
+      private int opStatusIntervalMinutes;
+      private List<String> blacklist;
+      private List<String> ignoredPlayers;
+  
+      public Config(SpigotLogs plugin) {
+          this.plugin = plugin;
+      }
+  
+      public void load() {
+          plugin.reloadConfig();
+          FileConfiguration cfg = plugin.getConfig();
+  
+          this.channel = cfg.getString("channel", "velocitylogs:main");
+          this.logOps = cfg.getBoolean("log-ops", true);
+          this.reportOpStatus = cfg.getBoolean("report-op-status", true);
+          this.opStatusIntervalMinutes = cfg.getInt("op-status-interval-minutes", 5);
+  
+          String configured = cfg.getString("server-name", "");
+          if (configured != null && !configured.trim().isEmpty()) {
+              this.serverName = configured.trim();
+          } else {
+              String bukkit = plugin.getServer().getServerName();
+              if (bukkit == null || bukkit.isEmpty()
+                      || bukkit.equalsIgnoreCase("Unknown Server")) {
+                  this.serverName = "server-" + plugin.getServer().getPort();
+              } else {
+                  this.serverName = bukkit;
+              }
+          }
+  
+          List<String> rawBlacklist = cfg.getStringList("blacklist");
+          if (rawBlacklist == null) rawBlacklist = new ArrayList<>();
+          this.blacklist = rawBlacklist.stream()
+                  .filter(s -> s != null)
+                  .map(s -> s.toLowerCase(Locale.ROOT).trim())
+                  .collect(Collectors.toList());
+  
+          List<String> rawIgnored = cfg.getStringList("ignored-players");
+          if (rawIgnored == null) rawIgnored = new ArrayList<>();
+          this.ignoredPlayers = rawIgnored.stream()
+                  .filter(s -> s != null)
+                  .map(s -> s.toLowerCase(Locale.ROOT).trim())
+                  .collect(Collectors.toList());
+      }
+  
+      public String getChannel() { return channel; }
+      public String getServerName() { return serverName; }
+      public boolean isLogOps() { return logOps; }
+      public boolean isReportOpStatus() { return reportOpStatus; }
+      public int getOpStatusIntervalMinutes() { return opStatusIntervalMinutes; }
+  
+      public boolean isBlacklisted(String command) {
+          String base = command.split(" ", 2)[0].toLowerCase(Locale.ROOT);
+          return blacklist.contains(base);
+      }
+  
+      public boolean isIgnoredPlayer(String playerName) {
+          return ignoredPlayers.contains(playerName.toLowerCase(Locale.ROOT));
+      }
+  }
+│           │                   ├── SpigotLogs.java
+  package ir.muvixo.logs.spigot;
+  
+  import com.google.common.io.ByteArrayDataOutput;
+  import com.google.common.io.ByteStreams;
+  import org.bukkit.entity.Player;
+  import org.bukkit.plugin.java.JavaPlugin;
+  
+  /**
+   * SpigotLogs v2.0 - forwards every command to the Velocity proxy.
+   * Works on Minecraft 1.8.8 / 1.8.9.
+   *
+   * @author muvixo
+   */
+  public class SpigotLogs extends JavaPlugin {
+  
+      private Config config;
+  
+      /** Toggle for command forwarding (runtime, resets on restart). */
+      private boolean forwardingEnabled = true;
+  
+      /** Toggle for debug logging (runtime, resets on restart). */
+      private boolean debugEnabled = false;
+  
+      @Override
+      public void onEnable() {
+          saveDefaultConfig();
+          this.config = new Config(this);
+          this.config.load();
+  
+          getServer().getMessenger().registerOutgoingPluginChannel(this, config.getChannel());
+          getServer().getPluginManager().registerEvents(new CommandInterceptor(this, config), this);
+  
+          // Register /vlogs command
+          VLogsCommand cmd = new VLogsCommand(this, config);
+          if (getCommand("vlogs") != null) {
+              getCommand("vlogs").setExecutor(cmd);
+              getCommand("vlogs").setTabCompleter(cmd);
+          }
+  
+          long intervalTicks = config.getOpStatusIntervalMinutes() * 60L * 20L;
+          if (intervalTicks > 0) {
+              getServer().getScheduler().runTaskTimer(this, () -> {
+                  for (Player p : getServer().getOnlinePlayers()) {
+                      if (p.isOp()) sendOpStatus(p, true);
+                  }
+              }, intervalTicks, intervalTicks);
+          }
+  
+          getLogger().info("===========================================");
+          getLogger().info("  VelocityLogs-Spigot v" + getDescription().getVersion());
+          getLogger().info("  Channel: " + config.getChannel());
+          getLogger().info("  Server name: " + config.getServerName());
+          getLogger().info("  Report OP: " + config.isReportOpStatus());
+          getLogger().info("===========================================");
+      }
+  
+      @Override
+      public void onDisable() {
+          try {
+              getServer().getMessenger().unregisterOutgoingPluginChannel(this);
+          } catch (Exception ignored) {}
+          getLogger().info("VelocityLogs-Spigot disabled.");
+      }
+  
+      // ============================================================
+      //  RELOAD — used by /vlogs reload
+      // ============================================================
+      public void reloadAll() {
+          reloadConfig();
+          this.config.load();
+          getLogger().info("[VelocityLogs] Config reloaded.");
+      }
+  
+      // ============================================================
+      //  MESSAGING
+      // ============================================================
+      public void sendOpStatus(Player player, boolean isOp) {
+          try {
+              ByteArrayDataOutput out = ByteStreams.newDataOutput();
+              out.writeUTF("OP_STATUS");
+              out.writeUTF(player.getUniqueId().toString());
+              out.writeUTF(player.getName());
+              out.writeUTF(config.getServerName());
+              out.writeUTF(Boolean.toString(isOp));
+              player.sendPluginMessage(this, config.getChannel(), out.toByteArray());
+          } catch (Exception e) {
+              getLogger().warning("Failed to send OP_STATUS: " + e.getMessage());
+          }
+      }
+  
+      // ============================================================
+      //  GETTERS / SETTERS
+      // ============================================================
+      public Config getPluginConfig()               { return config; }
+  
+      public boolean isForwardingEnabled()          { return forwardingEnabled; }
+      public void setForwardingEnabled(boolean v)   { this.forwardingEnabled = v; }
+  
+      public boolean isDebugEnabled()               { return debugEnabled; }
+      public void setDebugEnabled(boolean v)        { this.debugEnabled = v; }
+  }
+│           │                   └── VLogsCommand.java
+  package ir.muvixo.logs.spigot;
+  
+  import java.util.ArrayList;
+  import java.util.List;
+  
+  import org.bukkit.ChatColor;
+  import org.bukkit.command.Command;
+  import org.bukkit.command.CommandExecutor;
+  import org.bukkit.command.CommandSender;
+  import org.bukkit.command.TabCompleter;
+  
+  /**
+   * /vlogs — Spigot side command with a permission-aware help menu.
+   *
+   * Regular players (no perms) → only "You do not have permission."
+   * OPs / perm holders → General + (if admin) Admin sections.
+   *
+   * @author muvixo
+   */
+  public class VLogsCommand implements CommandExecutor, TabCompleter {
+  
+      private final SpigotLogs plugin;
+      private final Config config;
+  
+      public VLogsCommand(SpigotLogs plugin, Config config) {
+          this.plugin = plugin;
+          this.config = config;
+      }
+  
+      // ============================================================
+      //  COMMAND DISPATCH
+      // ============================================================
+  
+      @Override
+      public boolean onCommand(CommandSender sender, Command command,
+                               String label, String[] args) {
+  
+          if (args.length == 0) {
+              sendHelp(sender);
+              return true;
+          }
+  
+          String sub = args[0].toLowerCase();
+  
+          if (sub.equals("help") || sub.equals("?")) {
+              sendHelp(sender);
+              return true;
+          }
+  
+          if (sub.equals("creator") || sub.equals("author")) {
+              if (!sender.hasPermission(getPerm("creator", "velocitylogs.creator"))) {
+                  noPerm(sender); return true;
+              }
+              sendCreator(sender);
+              return true;
+          }
+  
+          if (sub.equals("info")) {
+              if (!sender.hasPermission(getPerm("use", "velocitylogs.use"))) {
+                  noPerm(sender); return true;
+              }
+              sendInfo(sender);
+              return true;
+          }
+  
+          if (sub.equals("status")) {
+              if (!sender.hasPermission(getPerm("status", "velocitylogs.status"))) {
+                  noPerm(sender); return true;
+              }
+              sendStatus(sender);
+              return true;
+          }
+  
+          if (sub.equals("reload")) {
+              if (!sender.hasPermission(getPerm("reload", "velocitylogs.reload"))) {
+                  noPerm(sender); return true;
+              }
+              plugin.reloadAll();
+              sender.sendMessage(colorize("&a[OK] Config reloaded."));
+              return true;
+          }
+  
+          if (sub.equals("toggle")) {
+              if (!sender.hasPermission(getPerm("toggle", "velocitylogs.toggle"))) {
+                  noPerm(sender); return true;
+              }
+              boolean now = !plugin.isForwardingEnabled();
+              plugin.setForwardingEnabled(now);
+              sender.sendMessage(colorize(now
+                      ? "&aCommand forwarding &lENABLED&a."
+                      : "&cCommand forwarding &lDISABLED&c."));
+              return true;
+          }
+  
+          if (sub.equals("debug")) {
+              if (!sender.hasPermission(getPerm("debug", "velocitylogs.debug"))) {
+                  noPerm(sender); return true;
+              }
+              boolean now = !plugin.isDebugEnabled();
+              plugin.setDebugEnabled(now);
+              sender.sendMessage(colorize(now
+                      ? "&aDebug mode &lENABLED&a."
+                      : "&cDebug mode &lDISABLED&c."));
+              return true;
+          }
+  
+          sender.sendMessage(colorize("&cUnknown subcommand. Use &e/vlogs help"));
+          return true;
+      }
+  
+      // ============================================================
+      //  PERMISSION HELPER
+      // ============================================================
+      private String getPerm(String action, String defaultPerm) {
+          String value = plugin.getConfig().getString("permissions." + action);
+          if (value == null || value.trim().isEmpty()) {
+              return defaultPerm;
+          }
+          return value.trim();
+      }
+  
+      // ============================================================
+      //  HELP MENU — permission-aware
+      //  Regular players (no perms) → only "no permission".
+      // ============================================================
+      private void sendHelp(CommandSender sender) {
+  
+          // ---- Load all permission nodes ----
+          String permUse     = getPerm("use",     "velocitylogs.use");
+          String permCreator = getPerm("creator", "velocitylogs.creator");
+  
+          String permAdmin   = getPerm("admin",   "velocitylogs.admin");
+          String permReload  = getPerm("reload",  "velocitylogs.reload");
+          String permStatus  = getPerm("status",  "velocitylogs.status");
+          String permToggle  = getPerm("toggle",  "velocitylogs.toggle");
+          String permDebug   = getPerm("debug",   "velocitylogs.debug");
+  
+          // ---- Determine what the sender can see ----
+          boolean isAdmin =
+                  sender.hasPermission(permAdmin)
+               || sender.hasPermission(permReload)
+               || sender.hasPermission(permStatus)
+               || sender.hasPermission(permToggle)
+               || sender.hasPermission(permDebug);
+  
+          boolean isUser =
+                  sender.hasPermission(permUse)
+               || sender.hasPermission(permCreator);
+  
+          // ============================================================
+          //  REGULAR PLAYER → NO PERMISSION AT ALL
+          // ============================================================
+          if (!isAdmin && !isUser) {
+              noPerm(sender);
+              return;
+          }
+  
+          // ---------------- HEADER ----------------
+          sender.sendMessage(colorize("&8&m----------------------------------"));
+          sender.sendMessage(colorize("&6&lVelocityLogs &7- &eSpigot Commands"));
+          sender.sendMessage(colorize("&8&m----------------------------------"));
+  
+          // ---------------- GENERAL COMMANDS ----------------
+          sender.sendMessage(colorize("&e&lGeneral Commands"));
+  
+          // /vlogs help — always visible once the sender passed the check
+          sender.sendMessage(colorize("  &6/vlogs help &8- &7Show this help"));
+  
+          if (sender.hasPermission(permCreator)) {
+              sender.sendMessage(colorize("  &6/vlogs creator &8- &7Show plugin credits"));
+          }
+          if (sender.hasPermission(permUse)) {
+              sender.sendMessage(colorize("  &6/vlogs info &8- &7Show plugin info"));
+          }
+  
+          // ---------------- ADMIN COMMANDS ----------------
+          if (isAdmin) {
+              sender.sendMessage(colorize("&8&m----------------------------------"));
+              sender.sendMessage(colorize("&c&lAdmin Commands"));
+  
+              if (sender.hasPermission(permStatus)) {
+                  sender.sendMessage(colorize("  &6/vlogs status &8- &7Show plugin status"));
+              }
+              if (sender.hasPermission(permToggle)) {
+                  sender.sendMessage(colorize("  &6/vlogs toggle &8- &7Toggle command forwarding"));
+              }
+              if (sender.hasPermission(permDebug)) {
+                  sender.sendMessage(colorize("  &6/vlogs debug &8- &7Toggle debug mode"));
+              }
+              if (sender.hasPermission(permReload)) {
+                  sender.sendMessage(colorize("  &6/vlogs reload &8- &7Reload configuration"));
+              }
+          }
+  
+          // ---------------- FOOTER ----------------
+          sender.sendMessage(colorize("&8&m----------------------------------"));
+          sender.sendMessage(colorize("&7Channel: &e" + config.getChannel()
+                  + " &8| &7Server: &e" + config.getServerName()));
+          sender.sendMessage(colorize("&8&m----------------------------------"));
+      }
+  
+      // ============================================================
+      //  SUB-OUTPUT
+      // ============================================================
+      private void sendCreator(CommandSender sender) {
+          sender.sendMessage(colorize("&8&m----------------------------------"));
+          sender.sendMessage(colorize("&6&lVelocityLogs-Spigot"));
+          sender.sendMessage(colorize("&7Author: &bmuvixo"));
+          sender.sendMessage(colorize("&7Version: &f" + plugin.getDescription().getVersion()));
+          sender.sendMessage(colorize("&7API: &fSpigot 1.8.8"));
+          sender.sendMessage(colorize("&8&m----------------------------------"));
+      }
+  
+      private void sendInfo(CommandSender sender) {
+          sender.sendMessage(colorize("&8&m----------------------------------"));
+          sender.sendMessage(colorize("&6&lVelocityLogs &7- &eInfo"));
+          sender.sendMessage(colorize("&7Channel: &e" + config.getChannel()));
+          sender.sendMessage(colorize("&7Server name: &e" + config.getServerName()));
+          sender.sendMessage(colorize("&7Log OPs: &e" + config.isLogOps()));
+          sender.sendMessage(colorize("&7Report OP status: &e" + config.isReportOpStatus()));
+          sender.sendMessage(colorize("&8&m----------------------------------"));
+      }
+  
+      private void sendStatus(CommandSender sender) {
+          sender.sendMessage(colorize("&8&m----------------------------------"));
+          sender.sendMessage(colorize("&6&lVelocityLogs &7- &eStatus"));
+          sender.sendMessage(colorize("&7Forwarding: "
+                  + (plugin.isForwardingEnabled() ? "&aENABLED" : "&cDISABLED")));
+          sender.sendMessage(colorize("&7Debug: "
+                  + (plugin.isDebugEnabled() ? "&aON" : "&cOFF")));
+          sender.sendMessage(colorize("&7Channel: &e" + config.getChannel()));
+          sender.sendMessage(colorize("&7Server name: &e" + config.getServerName()));
+          sender.sendMessage(colorize("&7Log OPs: &e" + config.isLogOps()));
+          sender.sendMessage(colorize("&8&m----------------------------------"));
+      }
+  
+      private void noPerm(CommandSender sender) {
+          sender.sendMessage(colorize("&cYou do not have permission."));
+      }
+  
+      // ============================================================
+      //  TAB COMPLETE — permission-aware
+      // ============================================================
+      @Override
+      public List<String> onTabComplete(CommandSender sender, Command command,
+                                        String alias, String[] args) {
+          List<String> out = new ArrayList<String>();
+  
+          if (args.length == 1) {
+              List<String> subs = new ArrayList<String>();
+  
+              // Only suggest subcommands the sender can actually run.
+              boolean isAdmin =
+                      sender.hasPermission(getPerm("admin",  "velocitylogs.admin"))
+                   || sender.hasPermission(getPerm("reload", "velocitylogs.reload"))
+                   || sender.hasPermission(getPerm("status", "velocitylogs.status"))
+                   || sender.hasPermission(getPerm("toggle", "velocitylogs.toggle"))
+                   || sender.hasPermission(getPerm("debug",  "velocitylogs.debug"));
+  
+              boolean isUser =
+                      sender.hasPermission(getPerm("use",     "velocitylogs.use"))
+                   || sender.hasPermission(getPerm("creator", "velocitylogs.creator"));
+  
+              // If the sender has no perms, suggest nothing.
+              if (!isAdmin && !isUser) {
+                  return out;
+              }
+  
+              subs.add("help");
+  
+              if (sender.hasPermission(getPerm("creator", "velocitylogs.creator"))) subs.add("creator");
+              if (sender.hasPermission(getPerm("use",     "velocitylogs.use")))     subs.add("info");
+              if (sender.hasPermission(getPerm("status",  "velocitylogs.status")))  subs.add("status");
+              if (sender.hasPermission(getPerm("toggle",  "velocitylogs.toggle")))  subs.add("toggle");
+              if (sender.hasPermission(getPerm("debug",   "velocitylogs.debug")))   subs.add("debug");
+              if (sender.hasPermission(getPerm("reload",  "velocitylogs.reload")))  subs.add("reload");
+  
+              String partial = args[0].toLowerCase();
+              for (String s : subs) if (s.startsWith(partial)) out.add(s);
+          }
+          return out;
+      }
+  
+      private String colorize(String message) {
+          if (message == null) return "";
+          return ChatColor.translateAlternateColorCodes('&', message);
+      }
+  }
+│           └── resources
+│               ├── config.yml
+  # ============================================================
+  #  VelocityLogs-Spigot v2.1 - backend config
+  #  Author: muvixo
+  # ============================================================
+  
+  # Plugin messaging channel. MUST match the Velocity side.
+  channel: "velocitylogs:main"
+  
+  # Name of this backend server.
+  # Leave empty to auto-detect.
+  server-name: ""
+  
+  # Send commands to the proxy even for OP players?
+  log-ops: true
+  
+  # Send OP status to the proxy on player join, quit, AND with every command?
+  # (v2.1 fix: sending it with every command clears stale OP entries.)
+  report-op-status: true
+  
+  # Also report OP status periodically as a safety net.
+  # Lower = faster sync, slightly more traffic. 1 is a good value.
+  op-status-interval-minutes: 1
+  
+  # Hide these commands from being forwarded.
+  blacklist:
+    - "login"
+    - "register"
+    - "changepassword"
+  
+  # Ignore commands from these players entirely.
+  ignored-players: []
+  
+  # ============================================================
+  #  Permission Nodes
+  #  Read by /vlogs help to decide which commands to show.
+  #  Override any node here to use a different permission name.
+  # ============================================================
+  permissions:
+    use:      "velocitylogs.use"
+    creator:  "velocitylogs.creator"
+  
+    admin:    "velocitylogs.admin"
+    reload:   "velocitylogs.reload"
+    status:   "velocitylogs.status"
+    toggle:   "velocitylogs.toggle"
+    debug:    "velocitylogs.debug"
+│               └── plugin.yml
+  name: VelocityLogs-Spigot
+  main: ir.muvixo.logs.spigot.SpigotLogs
+  version: ${project.version}
+  author: muvixo
+  description: Forwards every command executed by players to the Velocity proxy
+  
+  commands:
+    vlogs:
+      description: VelocityLogs Spigot helper command
+      usage: /vlogs help
+      aliases: [velogs, velocitylogs]
+  
+  permissions:
+    # ---- Public (op only — regular players see "no permission") ----
+    velocitylogs.use:
+      description: Access to /vlogs info
+      default: op
+    velocitylogs.creator:
+      description: See plugin credits
+      default: op
+  
+    # ---- Admin ----
+    velocitylogs.admin:
+      description: Full admin access
+      default: op
+    velocitylogs.reload:
+      description: Reload config
+      default: op
+    velocitylogs.status:
+      description: Show plugin status
+      default: op
+    velocitylogs.toggle:
+      description: Toggle command forwarding on/off
+      default: op
+    velocitylogs.debug:
+      description: Toggle debug mode
+      default: op
+└── velocity-plugin
+    ├── pom.xml
+  <?xml version="1.0" encoding="UTF-8"?>
+  <project xmlns="http://maven.apache.org/POM/4.0.0">
+      <modelVersion>4.0.0</modelVersion>
+  
+      <parent>
+          <groupId>ir.muvixo</groupId>
+          <artifactId>velocity-logs-parent</artifactId>
+          <version>2.0.0</version>
+      </parent>
+  
+      <artifactId>velocity-logs-velocity</artifactId>
+      <packaging>jar</packaging>
+      <name>VelocityLogs (Velocity)</name>
+  
+      <dependencies>
+          <dependency>
+              <groupId>com.velocitypowered</groupId>
+              <artifactId>velocity-api</artifactId>
+              <version>3.3.0-SNAPSHOT</version>
+              <scope>provided</scope>
+          </dependency>
+          <dependency>
+              <groupId>org.spongepowered</groupId>
+              <artifactId>configurate-yaml</artifactId>
+              <version>4.1.2</version>
+          </dependency>
+      </dependencies>
+  
+      <build>
+          <finalName>${project.artifactId}-${project.version}</finalName>
+          <resources>
+              <resource>
+                  <directory>src/main/resources</directory>
+                  <filtering>true</filtering>
+                  <includes>
+                      <include>velocity-plugin.json</include>
+                  </includes>
+              </resource>
+              <resource>
+                  <directory>src/main/resources</directory>
+                  <filtering>false</filtering>
+                  <excludes>
+                      <exclude>velocity-plugin.json</exclude>
+                  </excludes>
+              </resource>
+          </resources>
+          <plugins>
+              <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-compiler-plugin</artifactId>
+                  <configuration>
+                      <release>17</release>
+                  </configuration>
+              </plugin>
+  
+              <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-shade-plugin</artifactId>
+                  <executions>
+                      <execution>
+                          <phase>package</phase>
+                          <goals><goal>shade</goal></goals>
+                          <configuration>
+                              <createDependencyReducedPom>false</createDependencyReducedPom>
+  
+                              <filters>
+                                  <filter>
+                                      <artifact>*:*</artifact>
+                                      <excludes>
+                                          <exclude>META-INF/*.SF</exclude>
+                                          <exclude>META-INF/*.DSA</exclude>
+                                          <exclude>META-INF/*.RSA</exclude>
+                                          <exclude>META-INF/*.EC</exclude>
+                                          <exclude>META-INF/MANIFEST.MF</exclude>
+                                          <exclude>module-info.class</exclude>
+                                          <exclude>META-INF/versions/*/module-info.class</exclude>
+                                      </excludes>
+                                  </filter>
+                              </filters>
+  
+                              <relocations>
+                                  <relocation>
+                                      <pattern>org.spongepowered.configurate</pattern>
+                                      <shadedPattern>ir.muvixo.logs.libs.configurate</shadedPattern>
+                                  </relocation>
+                                  <relocation>
+                                      <pattern>io.leangen.geantyref</pattern>
+                                      <shadedPattern>ir.muvixo.logs.libs.geantyref</shadedPattern>
+                                  </relocation>
+                                  <relocation>
+                                      <pattern>org.yaml.snakeyaml</pattern>
+                                      <shadedPattern>ir.muvixo.logs.libs.snakeyaml</shadedPattern>
+                                  </relocation>
+                              </relocations>
+                          </configuration>
+                      </execution>
+                  </executions>
+              </plugin>
+          </plugins>
+      </build>
+  </project>
+    └── src
+        └── main
+            ├── java
+            │   └── ir
+            │       └── muvixo
+            │           └── logs
+            │               └── velocity
+            │                   ├── BackendMessageReceiver.java
+  package ir.muvixo.logs.velocity;
+  
+  import com.google.common.io.ByteArrayDataInput;
+  import com.google.common.io.ByteStreams;
+  import com.velocitypowered.api.event.Subscribe;
+  import com.velocitypowered.api.event.connection.PluginMessageEvent;
+  import com.velocitypowered.api.proxy.Player;
+  import com.velocitypowered.api.proxy.ProxyServer;
+  import com.velocitypowered.api.proxy.ServerConnection;
+  import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
+  import net.kyori.adventure.text.Component;
+  import org.slf4j.Logger;
+  
+  import java.time.LocalTime;
+  import java.time.format.DateTimeFormatter;
+  import java.util.UUID;
+  
+  /**
+   * Receives plugin messages from Spigot backends.
+   *
+   * v2.2 - The CMD message syncs OP status on every command:
+   *        if a player is no longer OP, they are immediately unmarked on
+   *        the proxy. Broadcast uses PermissionChecker so both backend-OPs
+   *        and players with the configured permissions can see the logs.
+   *
+   * @author muvixo
+   */
+  public class BackendMessageReceiver {
+  
+      private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss");
+  
+      private final ProxyServer server;
+      private final Logger logger;
+      private final Config config;
+      private final OpPlayerManager opManager;
+      private final PermissionChecker permChecker;
+      private final MinecraftChannelIdentifier channel;
+  
+      public BackendMessageReceiver(ProxyServer server, Logger logger, Config config,
+                                    OpPlayerManager opManager, PermissionChecker permChecker) {
+          this.server = server;
+          this.logger = logger;
+          this.config = config;
+          this.opManager = opManager;
+          this.permChecker = permChecker;
+          this.channel = MinecraftChannelIdentifier.from(config.getChannel());
+      }
+  
+      // ============================================================
+      //  PLUGIN MESSAGE HANDLER
+      // ============================================================
+      @Subscribe
+      public void onPluginMessage(PluginMessageEvent event) {
+          if (!event.getIdentifier().equals(channel)) return;
+          event.setResult(PluginMessageEvent.ForwardResult.handled());
+  
+          if (!(event.getSource() instanceof ServerConnection connection)) return;
+          String sourceServer = connection.getServerInfo().getName();
+  
+          try {
+              ByteArrayDataInput in = ByteStreams.newDataInput(event.getData());
+              String type = in.readUTF();
+  
+              switch (type) {
+                  case "OP_STATUS" -> handleOpStatus(in, sourceServer);
+                  case "CMD"       -> handleCommand(in, sourceServer);
+                  default -> logger.warn("[VelocityLogs] Unknown message type: {}", type);
+              }
+          } catch (Exception e) {
+              logger.warn("[VelocityLogs] Failed to decode plugin message from {}", sourceServer, e);
+          }
+      }
+  
+      // ============================================================
+      //  OP_STATUS
+      // ============================================================
+      private void handleOpStatus(ByteArrayDataInput in, String sourceServer) {
+          UUID uuid = UUID.fromString(in.readUTF());
+          String name = in.readUTF();
+          String serverName = in.readUTF();
+          boolean isOp = Boolean.parseBoolean(in.readUTF());
+  
+          if (isOp) opManager.markOp(uuid, name, serverName);
+          else      opManager.unmarkOp(uuid, name);
+  
+          if (config.isDebug()) {
+              logger.info("[OP-TRACK] {} -> {} (from {})", name, isOp, serverName);
+          }
+      }
+  
+      // ============================================================
+      //  CMD
+      // ============================================================
+      private void handleCommand(ByteArrayDataInput in, String sourceServer) {
+          UUID uuid = UUID.fromString(in.readUTF());
+          String name = in.readUTF();
+          String serverName = in.readUTF();
+          boolean isOp = Boolean.parseBoolean(in.readUTF());
+          String command = in.readUTF();
+  
+          // Sync OP status on every command so stale entries are cleared.
+          if (isOp) opManager.markOp(uuid, name, serverName);
+          else      opManager.unmarkOp(uuid, name);
+  
+          broadcast(name, serverName, command);
+      }
+  
+      // ============================================================
+      //  BROADCAST
+      // ============================================================
+      private void broadcast(String playerName, String serverName, String command) {
+  
+          // Build the message once, reuse it for every recipient.
+          String time = LocalTime.now().format(TIME_FORMAT);
+          String raw = config.getMessageFormat()
+                  .replace("{player}",  playerName)
+                  .replace("{server}",  serverName)
+                  .replace("{command}", command)
+                  .replace("{time}",    time);
+          Component message = ColorUtil.color(raw);
+  
+          int total = 0, sent = 0;
+          for (Player online : server.getAllPlayers()) {
+              total++;
+  
+              // Only send to players who are allowed to see the logs
+              // (backend-OP, or have the configured see/admin permission).
+              if (!permChecker.canSee(online)) continue;
+  
+              // Hide own command only if show-to-self is disabled.
+              if (!config.isShowToSelf()
+                      && online.getUsername().equalsIgnoreCase(playerName)) {
+                  continue;
+              }
+  
+              online.sendMessage(message);
+              sent++;
+          }
+  
+          if (config.isLogToConsole()) {
+              logger.info("[{}@{}] /{}  (online: {}, sent: {}, tracked-ops: {})",
+                      playerName, serverName, command, total, sent, opManager.getOpCount());
+          }
+      }
+  }
+            │                   ├── ColorUtil.java
+  package ir.muvixo.logs.velocity;
+  
+  import net.kyori.adventure.text.Component;
+  import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+  
+  import java.util.regex.Matcher;
+  import java.util.regex.Pattern;
+  
+  /**
+   * Color utility: legacy (&a, &c) + hex (&#RRGGBB).
+   *
+   * @author muvixo
+   */
+  public final class ColorUtil {
+  
+      private static final Pattern HEX_PATTERN = Pattern.compile("&#([A-Fa-f0-9]{6})");
+  
+      private ColorUtil() {}
+  
+      public static Component color(String text) {
+          if (text == null) return Component.empty();
+          String withHex = translateHex(text);
+          return LegacyComponentSerializer.legacyAmpersand().deserialize(withHex);
+      }
+  
+      private static String translateHex(String message) {
+          Matcher matcher = HEX_PATTERN.matcher(message);
+          StringBuffer buffer = new StringBuffer();
+  
+          while (matcher.find()) {
+              String hex = matcher.group(1);
+              StringBuilder replacement = new StringBuilder("\u00a7x");
+              for (char c : hex.toCharArray()) {
+                  replacement.append("\u00a7").append(c);
+              }
+              matcher.appendReplacement(buffer, replacement.toString());
+          }
+          matcher.appendTail(buffer);
+          return buffer.toString();
+      }
+  }
+            │                   ├── Config.java
+  package ir.muvixo.logs.velocity;
+  
+  import org.slf4j.Logger;
+  import org.spongepowered.configurate.CommentedConfigurationNode;
+  import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
+  
+  import java.io.IOException;
+  import java.io.InputStream;
+  import java.nio.file.Files;
+  import java.nio.file.Path;
+  
+  /**
+   * Config manager for VelocityLogs v2.1.
+   *
+   * @author muvixo
+   */
+  public class Config {
+  
+      private final Path dataDirectory;
+      private final Logger logger;
+  
+      private String channel;
+      private String messageFormat;
+      private String reloadSuccessMessage;
+      private String noPermissionMessage;
+      private boolean showToSelf;
+      private boolean logToConsole;
+      private boolean debug;
+      private int opCacheExpireMinutes;
+      private String seePermission;
+      private String adminPermission;
+  
+      public Config(Path dataDirectory, Logger logger) {
+          this.dataDirectory = dataDirectory;
+          this.logger = logger;
+      }
+  
+      public void load() {
+          Path file = dataDirectory.resolve("config.yml");
+  
+          if (!Files.exists(file)) {
+              try (InputStream in = getClass().getResourceAsStream("/config.yml")) {
+                  if (in != null) Files.copy(in, file);
+                  else Files.writeString(file, "# default config\n");
+              } catch (IOException e) {
+                  logger.error("Could not save default config", e);
+              }
+          }
+  
+          CommentedConfigurationNode root;
+          try {
+              root = YamlConfigurationLoader.builder().path(file).build().load();
+          } catch (IOException e) {
+              logger.error("Could not load config.yml", e);
+              return;
+          }
+  
+          this.channel = root.node("channel").getString("velocitylogs:main");
+          this.showToSelf = root.node("show-to-self").getBoolean(false);
+          this.logToConsole = root.node("log-to-console").getBoolean(true);
+          this.debug = root.node("debug").getBoolean(false);
+          this.opCacheExpireMinutes = root.node("op-cache-expire-minutes").getInt(5);
+  
+          this.messageFormat = root.node("message-format").getString(
+                  "&8[&cLogs&8] &e{player} &8>> &b{server} &8>> &f/{command}");
+          this.reloadSuccessMessage = root.node("reload-success-message").getString(
+                  "&a[OK] Config reloaded successfully!");
+          this.noPermissionMessage = root.node("no-permission-message").getString(
+                  "&c[!] You don't have permission to do that!");
+  
+          this.seePermission = root.node("permissions", "see")
+                  .getString("velocitylogs.see");
+          this.adminPermission = root.node("permissions", "admin")
+                  .getString("velocitylogs.admin");
+      }
+  
+      public String getChannel() { return channel; }
+      public String getMessageFormat() { return messageFormat; }
+      public String getReloadSuccessMessage() { return reloadSuccessMessage; }
+      public String getNoPermissionMessage() { return noPermissionMessage; }
+      public boolean isShowToSelf() { return showToSelf; }
+      public boolean isLogToConsole() { return logToConsole; }
+      public boolean isDebug() { return debug; }
+      public int getOpCacheExpireMinutes() { return opCacheExpireMinutes; }
+      public String getSeePermission() { return seePermission; }
+      public String getAdminPermission() { return adminPermission; }
+  }
+            │                   ├── LogsCommand.java
+  package ir.muvixo.logs.velocity;
+  
+  import com.velocitypowered.api.command.CommandSource;
+  import com.velocitypowered.api.command.SimpleCommand;
+  import com.velocitypowered.api.proxy.Player;
+  import com.velocitypowered.api.proxy.ProxyServer;
+  import net.kyori.adventure.text.Component;
+  import net.kyori.adventure.text.format.NamedTextColor;
+  import org.slf4j.Logger;
+  
+  import java.util.ArrayList;
+  import java.util.List;
+  import java.util.Map;
+  import java.util.Optional;
+  import java.util.UUID;
+  
+  /**
+   * /logs command with a permission-aware help menu.
+   *
+   * Regular players (not backend-OP) → only the no-permission message.
+   * Backend-OPs → General + Admin sections.
+   *
+   * @author muvixo
+   */
+  public class LogsCommand implements SimpleCommand {
+  
+      private final ProxyServer server;
+      private final Logger logger;
+      private final Config config;
+      private final OpPlayerManager opManager;
+      private final PermissionChecker permChecker;
+  
+      public LogsCommand(ProxyServer server, Logger logger, Config config,
+                         OpPlayerManager opManager, PermissionChecker permChecker) {
+          this.server = server;
+          this.logger = logger;
+          this.config = config;
+          this.opManager = opManager;
+          this.permChecker = permChecker;
+      }
+  
+      // ============================================================
+      //  EXECUTE
+      // ============================================================
+      @Override
+      public void execute(Invocation invocation) {
+          CommandSource source = invocation.source();
+          String[] args = invocation.arguments();
+  
+          if (args.length == 0) { sendHelp(source); return; }
+  
+          String sub = args[0].toLowerCase();
+  
+          switch (sub) {
+              case "help":
+              case "?":
+                  sendHelp(source);
+                  return;
+  
+              case "info":
+                  if (!canUse(source)) { noPerm(source); return; }
+                  sendInfo(source);
+                  return;
+  
+              case "creator":
+              case "author":
+                  if (!canUse(source)) { noPerm(source); return; }
+                  sendCreator(source);
+                  return;
+  
+              case "reload":
+                  if (!canReload(source)) { noPerm(source); return; }
+                  config.load();
+                  source.sendMessage(ColorUtil.color(config.getReloadSuccessMessage()));
+                  logger.info("Config reloaded by {}", source);
+                  return;
+  
+              case "list":
+                  if (!canReload(source)) { noPerm(source); return; }
+                  sendOpList(source);
+                  return;
+  
+              case "debug":
+              case "status": {
+                  if (!canReload(source)) { noPerm(source); return; }
+                  if (args.length < 2) {
+                      source.sendMessage(Component.text(
+                              "Usage: /logs " + sub + " <player>", NamedTextColor.RED));
+                      return;
+                  }
+                  Optional<Player> opt = server.getPlayer(args[1]);
+                  if (opt.isEmpty()) {
+                      source.sendMessage(Component.text(
+                              "Player not found: " + args[1], NamedTextColor.RED));
+                      return;
+                  }
+                  String report = permChecker.explain(opt.get());
+                  for (String line : report.split("\n")) {
+                      source.sendMessage(Component.text(line, NamedTextColor.GRAY));
+                  }
+                  return;
+              }
+  
+              default:
+                  sendHelp(source);
+          }
+      }
+  
+      // ============================================================
+      //  PERMISSION HELPERS
+      // ============================================================
+      private boolean canUse(CommandSource source) {
+          if (!(source instanceof Player)) return true; // console
+          return permChecker.canSee((Player) source);
+      }
+  
+      private boolean canReload(CommandSource source) {
+          if (!(source instanceof Player)) return true; // console
+          return permChecker.canReload((Player) source);
+      }
+  
+      // ============================================================
+      //  HELP MENU — permission-aware
+      //  Regular players (not backend-OP) → only "no permission".
+      // ============================================================
+      private void sendHelp(CommandSource source) {
+  
+          // ---- Determine what the sender can see ----
+          boolean isAdmin = canReload(source);   // reload/list/debug/status
+          boolean isUser  = canUse(source);      // info/creator
+  
+          // ============================================================
+          //  REGULAR PLAYER → NO PERMISSION AT ALL
+          // ============================================================
+          if (!isAdmin && !isUser) {
+              noPerm(source);
+              return;
+          }
+  
+          // ---------------- HEADER ----------------
+          header(source, "VelocityLogs - Velocity Commands");
+  
+          // ---------------- GENERAL COMMANDS ----------------
+          source.sendMessage(Component.text("General Commands", NamedTextColor.YELLOW));
+  
+          // /logs help — always visible once the sender passed the check
+          row(source, "/logs help", "Show this help");
+  
+          if (isUser) {
+              row(source, "/logs info", "Show plugin info");
+              row(source, "/logs creator", "Show plugin credits");
+          }
+  
+          // ---------------- ADMIN COMMANDS ----------------
+          if (isAdmin) {
+              separator(source);
+              source.sendMessage(Component.text("Admin Commands", NamedTextColor.RED));
+  
+              row(source, "/logs reload", "Reload config");
+              row(source, "/logs list", "List tracked OPs");
+              row(source, "/logs debug <player>", "Diagnose player");
+              row(source, "/logs status <player>", "Same as debug");
+          }
+  
+          // ---------------- FOOTER ----------------
+          separator(source);
+          source.sendMessage(Component.text("Channel: ", NamedTextColor.GRAY)
+                  .append(Component.text(config.getChannel(), NamedTextColor.YELLOW)));
+          source.sendMessage(Component.text("Tracked OPs: ", NamedTextColor.GRAY)
+                  .append(Component.text(String.valueOf(opManager.getOpCount()), NamedTextColor.YELLOW)));
+          separator(source);
+      }
+  
+      // ============================================================
+      //  SUB-OUTPUT
+      // ============================================================
+      private void sendInfo(CommandSource source) {
+          source.sendMessage(Component.text("VelocityLogs ", NamedTextColor.GOLD)
+                  .append(Component.text("v2.0.0 ", NamedTextColor.YELLOW))
+                  .append(Component.text("by muvixo", NamedTextColor.AQUA)));
+          source.sendMessage(Component.text("Channel: ", NamedTextColor.GRAY)
+                  .append(Component.text(config.getChannel(), NamedTextColor.WHITE)));
+          source.sendMessage(Component.text("Tracked OPs: ", NamedTextColor.GRAY)
+                  .append(Component.text(String.valueOf(opManager.getOpCount()), NamedTextColor.WHITE)));
+      }
+  
+      private void sendCreator(CommandSource source) {
+          source.sendMessage(Component.text("VelocityLogs ", NamedTextColor.GOLD)
+                  .append(Component.text("v2.0.0", NamedTextColor.YELLOW)));
+          source.sendMessage(Component.text("Author: ", NamedTextColor.GRAY)
+                  .append(Component.text("muvixo", NamedTextColor.AQUA)));
+          source.sendMessage(Component.text("API: ", NamedTextColor.GRAY)
+                  .append(Component.text("Velocity 3.x", NamedTextColor.WHITE)));
+      }
+  
+      private void sendOpList(CommandSource source) {
+          Map<UUID, OpPlayerManager.OpRecord> ops = opManager.getOpPlayers();
+          header(source, "Tracked OPs (" + ops.size() + ")");
+  
+          if (ops.isEmpty()) {
+              source.sendMessage(Component.text("  (none)", NamedTextColor.GRAY));
+              separator(source);
+              return;
+          }
+  
+          long now = System.currentTimeMillis();
+          for (OpPlayerManager.OpRecord r : ops.values()) {
+              long ageSec = (now - r.lastSeen) / 1000;
+              String line = String.format("  %s | server=%s | lastSeen=%ds ago",
+                      r.name, r.serverName, ageSec);
+              source.sendMessage(Component.text(line, NamedTextColor.GRAY));
+          }
+          separator(source);
+      }
+  
+      // ============================================================
+      //  FORMATTING HELPERS
+      // ============================================================
+      private void header(CommandSource source, String title) {
+          separator(source);
+          source.sendMessage(Component.text(title, NamedTextColor.GOLD));
+          separator(source);
+      }
+  
+      private void separator(CommandSource source) {
+          source.sendMessage(Component.text("----------------------------------",
+                  NamedTextColor.DARK_GRAY));
+      }
+  
+      private void row(CommandSource source, String cmd, String desc) {
+          source.sendMessage(Component.text("  " + cmd, NamedTextColor.GOLD)
+                  .append(Component.text(" - " + desc, NamedTextColor.GRAY)));
+      }
+  
+      private void noPerm(CommandSource source) {
+          source.sendMessage(ColorUtil.color(config.getNoPermissionMessage()));
+      }
+  
+      // ============================================================
+      //  TAB COMPLETE — permission-aware
+      // ============================================================
+      @Override
+      public boolean hasPermission(Invocation invocation) {
+          return true;
+      }
+  
+      @Override
+      public List<String> suggest(Invocation invocation) {
+          CommandSource source = invocation.source();
+          String[] args = invocation.arguments();
+          List<String> out = new ArrayList<>();
+  
+          if (args.length <= 1) {
+              boolean isAdmin = canReload(source);
+              boolean isUser  = canUse(source);
+  
+              // No perms → suggest nothing.
+              if (!isAdmin && !isUser) return out;
+  
+              List<String> subs = new ArrayList<>();
+              subs.add("help");
+  
+              if (isUser) {
+                  subs.add("info");
+                  subs.add("creator");
+              }
+              if (isAdmin) {
+                  subs.add("reload");
+                  subs.add("list");
+                  subs.add("debug");
+                  subs.add("status");
+              }
+  
+              String partial = args.length == 0 ? "" : args[0].toLowerCase();
+              for (String s : subs) if (s.startsWith(partial)) out.add(s);
+              return out;
+          }
+  
+          if (args.length == 2) {
+              String sub = args[0].toLowerCase();
+              if ((sub.equals("debug") || sub.equals("status")) && canReload(source)) {
+                  String partial = args[1].toLowerCase();
+                  for (Player p : server.getAllPlayers()) {
+                      if (p.getUsername().toLowerCase().startsWith(partial)) {
+                          out.add(p.getUsername());
+                      }
+                  }
+              }
+          }
+          return out;
+      }
+  }
+            │                   ├── OpPlayerManager.java
+  package ir.muvixo.logs.velocity;
+  
+  import com.velocitypowered.api.event.Subscribe;
+  import com.velocitypowered.api.event.connection.DisconnectEvent;
+  import com.velocitypowered.api.event.player.ServerPostConnectEvent;
+  import com.velocitypowered.api.proxy.ProxyServer;
+  import org.slf4j.Logger;
+  
+  import java.util.Map;
+  import java.util.UUID;
+  import java.util.concurrent.ConcurrentHashMap;
+  
+  /**
+   * Tracks which players are OP on a backend server.
+   *
+   * Entries are created when a backend reports OP_STATUS=true or when a
+   * command arrives with op=true. They are removed:
+   *   - Immediately when OP_STATUS=false arrives (e.g. player quit or de-opped).
+   *   - Immediately when a CMD arrives with op=false (fixes stale entries).
+   *   - After {@code op-cache-expire-minutes} once the player is offline.
+   *
+   * @author muvixo
+   */
+  public class OpPlayerManager {
+  
+      public static class OpRecord {
+          public final UUID uuid;
+          public volatile String name;
+          public volatile String serverName;
+          public volatile long lastSeen;
+  
+          public OpRecord(UUID uuid, String name, String serverName) {
+              this.uuid = uuid;
+              this.name = name;
+              this.serverName = serverName;
+              this.lastSeen = System.currentTimeMillis();
+          }
+  
+          public void refresh(String serverName) {
+              this.serverName = serverName;
+              this.lastSeen = System.currentTimeMillis();
+          }
+      }
+  
+      private final ProxyServer server;
+      private final Logger logger;
+      private final Config config;
+      private final Map<UUID, OpRecord> opPlayers = new ConcurrentHashMap<>();
+      private final Map<String, UUID> nameIndex = new ConcurrentHashMap<>();
+  
+      public OpPlayerManager(ProxyServer server, Logger logger, Config config) {
+          this.server = server;
+          this.logger = logger;
+          this.config = config;
+      }
+  
+      /**
+       * Mark a player as OP. If already tracked, refresh their server + name.
+       */
+      public void markOp(UUID uuid, String playerName, String serverName) {
+          if (uuid == null) return;
+  
+          OpRecord existing = opPlayers.get(uuid);
+          if (existing != null) {
+              // Update name index if the name changed
+              if (playerName != null && !playerName.equalsIgnoreCase(existing.name)) {
+                  nameIndex.remove(existing.name.toLowerCase());
+                  nameIndex.put(playerName.toLowerCase(), uuid);
+                  existing.name = playerName;
+              }
+              existing.refresh(serverName);
+              return;
+          }
+  
+          OpRecord rec = new OpRecord(uuid, playerName, serverName);
+          opPlayers.put(uuid, rec);
+          if (playerName != null) {
+              nameIndex.put(playerName.toLowerCase(), uuid);
+          }
+          if (logger != null) {
+              logger.info("[OP-TRACK] Marked {} ({}) as OP (backend: {})",
+                      playerName, uuid, serverName);
+          }
+      }
+  
+      /**
+       * Remove a player from the OP list. Uses the stored record's name for
+       * cleanup so a null/incorrect playerName argument can't leave a stale
+       * entry in the name index.
+       */
+      public void unmarkOp(UUID uuid, String playerName) {
+          if (uuid == null) return;
+  
+          OpRecord removed = opPlayers.remove(uuid);
+          if (removed != null) {
+              nameIndex.remove(removed.name.toLowerCase());
+              if (logger != null) {
+                  logger.info("[OP-TRACK] Unmarked {} ({})", removed.name, uuid);
+              }
+          }
+          // Clean up any leftover name-index entries for the supplied name too.
+          if (playerName != null) {
+              nameIndex.remove(playerName.toLowerCase());
+          }
+      }
+  
+      /**
+       * Is this UUID currently considered an OP?
+       * If the player is offline and the cache has expired, they are dropped.
+       */
+      public boolean isOp(UUID uuid) {
+          if (uuid == null) return false;
+          OpRecord rec = opPlayers.get(uuid);
+          if (rec == null) return false;
+  
+          int expire = config != null ? config.getOpCacheExpireMinutes() : 30;
+          if (expire > 0) {
+              boolean online = server.getPlayer(uuid).isPresent();
+              long age = System.currentTimeMillis() - rec.lastSeen;
+              if (!online && age > expire * 60_000L) {
+                  opPlayers.remove(uuid);
+                  nameIndex.remove(rec.name.toLowerCase());
+                  return false;
+              }
+          }
+          return true;
+      }
+  
+      public boolean isOpByName(String name) {
+          if (name == null) return false;
+          UUID uuid = nameIndex.get(name.toLowerCase());
+          return uuid != null && isOp(uuid);
+      }
+  
+      public String getOpServer(UUID uuid) {
+          OpRecord rec = opPlayers.get(uuid);
+          return rec == null ? null : rec.serverName;
+      }
+  
+      public int getOpCount() {
+          return opPlayers.size();
+      }
+  
+      public Map<UUID, OpRecord> getOpPlayers() {
+          return opPlayers;
+      }
+  
+      // ============================================================
+      //  Events
+      // ============================================================
+  
+      @Subscribe
+      public void onDisconnect(DisconnectEvent event) {
+          UUID uuid = event.getPlayer().getUniqueId();
+          OpRecord rec = opPlayers.get(uuid);
+          if (rec != null) {
+              rec.lastSeen = System.currentTimeMillis();
+          }
+      }
+  
+      @Subscribe
+      public void onServerPostConnect(ServerPostConnectEvent event) {
+          if (logger != null && config != null && config.isDebug()) {
+              logger.info("[OP-TRACK] {} connected to {} (OP status: {})",
+                      event.getPlayer().getUsername(),
+                      event.getPlayer().getCurrentServer()
+                              .map(s -> s.getServerInfo().getName()).orElse("?"),
+                      isOp(event.getPlayer().getUniqueId()));
+          }
+      }
+  }
+            │                   ├── PermissionChecker.java
+  package ir.muvixo.logs.velocity;
+  
+  import com.velocitypowered.api.proxy.Player;
+  import org.slf4j.Logger;
+  
+  /**
+   * Central permission checker.
+   *
+   * A player can see the logs if:
+   *   1. They are reported as OP by a backend Spigot server, OR
+   *   2. They have the configured "see" permission, OR
+   *   3. They have the configured "admin" permission.
+   *
+   * @author muvixo
+   */
+  public class PermissionChecker {
+  
+      private final Config config;
+      private final OpPlayerManager opManager;
+      private final Logger logger;
+  
+      public PermissionChecker(Config config, OpPlayerManager opManager, Logger logger) {
+          this.config = config;
+          this.opManager = opManager;
+          this.logger = logger;
+      }
+  
+      public boolean canSee(Player player) {
+          if (player == null) return false;
+  
+          // 1) Backend OP
+          if (opManager.isOp(player.getUniqueId())) return true;
+  
+          // 2) Explicit Velocity permissions (loaded from config)
+          String seePerm = config.getSeePermission();
+          String adminPerm = config.getAdminPermission();
+          if (seePerm != null && !seePerm.isEmpty() && player.hasPermission(seePerm)) return true;
+          if (adminPerm != null && !adminPerm.isEmpty() && player.hasPermission(adminPerm)) return true;
+  
+          return false;
+      }
+  
+      public boolean canReload(Player player) {
+          if (player == null) return false;
+          String adminPerm = config.getAdminPermission();
+          if (adminPerm != null && !adminPerm.isEmpty() && player.hasPermission(adminPerm)) return true;
+          return opManager.isOp(player.getUniqueId());
+      }
+  
+      public String explain(Player player) {
+          String seePerm = config.getSeePermission();
+          String adminPerm = config.getAdminPermission();
+          StringBuilder sb = new StringBuilder();
+          sb.append("Player: ").append(player.getUsername())
+            .append(" (").append(player.getUniqueId()).append(")\n");
+          sb.append("  tracked-as-op: ").append(opManager.isOp(player.getUniqueId())).append("\n");
+          sb.append("  op-server: ").append(opManager.getOpServer(player.getUniqueId())).append("\n");
+          sb.append("  has ").append(seePerm).append(": ")
+            .append(player.hasPermission(seePerm)).append("\n");
+          sb.append("  has ").append(adminPerm).append(": ")
+            .append(player.hasPermission(adminPerm)).append("\n");
+          sb.append("  RESULT: ").append(canSee(player) ? "CAN SEE LOGS" : "CANNOT SEE LOGS");
+          return sb.toString();
+      }
+  }
+            │                   └── VelocityLogs.java
+  package ir.muvixo.logs.velocity;
+  
+  import com.google.inject.Inject;
+  import com.velocitypowered.api.command.CommandManager;
+  import com.velocitypowered.api.event.Subscribe;
+  import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
+  import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
+  import com.velocitypowered.api.plugin.Plugin;
+  import com.velocitypowered.api.plugin.annotation.DataDirectory;
+  import com.velocitypowered.api.proxy.ProxyServer;
+  import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
+  import org.slf4j.Logger;
+  
+  import java.io.IOException;
+  import java.nio.file.Files;
+  import java.nio.file.Path;
+  
+  @Plugin(
+          id = "velocity-logs",
+          name = "VelocityLogs",
+          version = "2.0.0",
+          description = "Broadcasts commands from backend Spigot servers to staff",
+          authors = {"muvixo"}
+  )
+  public class VelocityLogs {
+  
+      private final ProxyServer server;
+      private final Logger logger;
+      private final Path dataDirectory;
+  
+      private Config config;
+      private OpPlayerManager opManager;
+      private PermissionChecker permissionChecker;
+      private BackendMessageReceiver receiver;
+      private MinecraftChannelIdentifier channel;
+  
+      @Inject
+      public VelocityLogs(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
+          this.server = server;
+          this.logger = logger;
+          this.dataDirectory = dataDirectory;
+      }
+  
+      @Subscribe
+      public void onProxyInitialize(ProxyInitializeEvent event) {
+          try {
+              if (!Files.exists(dataDirectory)) {
+                  Files.createDirectories(dataDirectory);
+              }
+          } catch (IOException e) {
+              logger.error("Could not create data directory", e);
+          }
+  
+          this.config = new Config(dataDirectory, logger);
+          this.config.load();
+  
+          this.opManager = new OpPlayerManager(server, logger, config);
+          server.getEventManager().register(this, opManager);
+  
+          this.permissionChecker = new PermissionChecker(config, opManager, logger);
+  
+          this.channel = MinecraftChannelIdentifier.from(config.getChannel());
+          server.getChannelRegistrar().register(channel);
+          this.receiver = new BackendMessageReceiver(server, logger, config, opManager, permissionChecker);
+          server.getEventManager().register(this, receiver);
+  
+          CommandManager cm = server.getCommandManager();
+          cm.register(
+                  cm.metaBuilder("logs")
+                          .aliases("cmdlogs", "commandlogs", "vlogs")
+                          .plugin(this)
+                          .build(),
+                  new LogsCommand(server, logger, config, opManager, permissionChecker)
+          );
+  
+          logger.info("===========================================");
+          logger.info("  VelocityLogs v2.0.0 by muvixo");
+          logger.info("  Channel: {}", config.getChannel());
+          logger.info("  Visibility: only backend OPs");
+          logger.info("  Debug: {}", config.isDebug());
+          logger.info("===========================================");
+      }
+  
+      @Subscribe
+      public void onProxyShutdown(ProxyShutdownEvent event) {
+          if (channel != null) {
+              try { server.getChannelRegistrar().unregister(channel); } catch (Exception ignored) {}
+          }
+          logger.info("VelocityLogs disabled.");
+      }
+  
+      public Config getConfig() { return config; }
+  }
+            └── resources
+                ├── config.yml
+  # ============================================================
+  #  VelocityLogs v2.1 - Velocity config
+  #  Author: muvixo
+  # ============================================================
+  
+  # Plugin messaging channel. MUST match the Spigot side.
+  channel: "velocitylogs:main"
+  
+  # ---------------- Behaviour ----------------
+  # Show the command log to the player who typed it? (set true to see your own)
+  show-to-self: true
+  
+  # Print every logged command to the proxy console.
+  log-to-console: true
+  
+  # Verbose debug output in the proxy log. Set to false in production.
+  debug: false
+  
+  # How long (in minutes) to keep an offline player marked as OP.
+  # Safety net in case an OP_STATUS=false message was lost.
+  # Set to 0 to disable expiration entirely (not recommended).
+  op-cache-expire-minutes: 5
+  
+  # ---------------- Message Format ----------------
+  # Placeholders: {player} {server} {command} {time}
+  # Supports legacy (&a, &c) and hex (&#RRGGBB) colors.
+  message-format: "&8[&cLogs&8] &e{player} &8>> &b{server} &8>> &f/{command}"
+  reload-success-message: "&a[OK] Config reloaded successfully!"
+  no-permission-message: "&c[!] You don't have permission to do that!"
+  
+  # ============================================================
+  #  Permission Nodes
+  #  A player can see the logs if ANY of the following is true:
+  #    1. They are OP on a backend server (auto-detected).
+  #    2. They have the "see" permission below.
+  #    3. They have the "admin" permission below.
+  #
+  #  Grant with LuckPerms (or any perm plugin):
+  #    /lp group staff permission set velocitylogs.see   true
+  #    /lp group admin permission set velocitylogs.admin true
+  # ============================================================
+  permissions:
+    see:   "velocitylogs.see"
+    admin: "velocitylogs.admin"
+                └── velocity-plugin.json
+  {
+    "id": "velocity-logs",
+    "name": "VelocityLogs",
+    "version": "${project.version}",
+    "description": "Broadcasts commands from backend Spigot servers to staff",
+    "authors": ["muvixo"],
+    "main": "ir.muvixo.logs.velocity.VelocityLogs"
+  }

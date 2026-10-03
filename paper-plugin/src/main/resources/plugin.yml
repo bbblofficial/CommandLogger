@@ -1,0 +1,34 @@
+name: VelocityLogs-Paper
+main: ir.muvixo.logs.paper.PaperLogs
+version: ${project.version}
+author: muvixo
+description: Forwards every command executed by players to the proxy
+
+commands:
+  vlogs:
+    description: VelocityLogs Paper helper command
+    usage: /vlogs help
+    aliases: [velogs, velocitylogs]
+
+permissions:
+  velocitylogs.use:
+    description: Access to /vlogs info
+    default: op
+  velocitylogs.creator:
+    description: See plugin credits
+    default: op
+  velocitylogs.admin:
+    description: Full admin access
+    default: op
+  velocitylogs.reload:
+    description: Reload config
+    default: op
+  velocitylogs.status:
+    description: Show plugin status
+    default: op
+  velocitylogs.toggle:
+    description: Toggle command forwarding on/off
+    default: op
+  velocitylogs.debug:
+    description: Toggle debug mode
+    default: op

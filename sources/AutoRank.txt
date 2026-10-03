@@ -1,0 +1,783 @@
+C:\Users\nasle javan\Downloads\SexToPlay\AutoRank-main\AutoRank-main/
+
+├── .github
+│   └── workflows
+│       └── build.yml
+  name: Build AutoRank
+  on:
+    push:
+      branches: [ main, master ]
+    pull_request:
+    workflow_dispatch:
+  jobs:
+    build:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+        - name: Set up JDK 17
+          uses: actions/setup-java@v4
+          with:
+            distribution: temurin
+            java-version: '17'
+            cache: maven
+        - name: Build with Maven
+          run: mvn -B clean package
+        - name: Upload artifact
+          uses: actions/upload-artifact@v4
+          with:
+            name: AutoRank-jar
+            path: target/AutoRank-*.jar
+├── .gitignore
+  target/
+  *.iml
+  .idea/
+  .vscode/
+  *.class
+├── README.md
+  # AutoRank (v1.0.1)
+  
+  Automatically gives a temporary LuckPerms rank to every player who joins during a configured time window.
+  
+  ## Commands
+  | Command | Description |
+  |---|---|
+  | `/autorank setup` | Show the setup wizard |
+  | `/autorank rank <lp group>` | Set the LuckPerms group to give |
+  | `/autorank duration <time>` | Set duration of the temporary rank (e.g. `7d`) |
+  | `/autorank time <time>` | Set how long AutoRank stays active (e.g. `24h`) |
+  | `/autorank timeremaining` | Show remaining time |
+  | `/autorank assigned` | List players who have received the rank |
+  | `/autorank creator` | Show plugin credits (open to everyone) |
+  | `/autorank reload` | Reload configs |
+  | `/autorank reset` | Reset AutoRank |
+  
+  Time format: `10s`, `5m`, `24h`, `7d`, `2w`, `1mo`, `1y`.
+  
+  ## Permission
+  - `autorank.admin.command` — access to all admin commands (default: op)
+  - `autorank.creator` — view `/autorank creator` (default: everyone)
+  
+  ## Credits
+  Created by **Muvixo**.
+├── ee.py
+  import os
+  
+  def print_tree(folder_path, file_handle, prefix="", show_content=False):
+      entries = sorted(os.listdir(folder_path))
+      for i, entry in enumerate(entries):
+          path = os.path.join(folder_path, entry)
+          is_last = i == len(entries) - 1
+          connector = "└── " if is_last else "├── "
+          file_handle.write(f"{prefix}{connector}{entry}\n")
+  
+          if os.path.isdir(path):
+              extension_prefix = "    " if is_last else "│   "
+              print_tree(path, file_handle, prefix + extension_prefix, show_content)
+          else:
+              if show_content:
+                  try:
+                      with open(path, "r", encoding="utf-8") as f:
+                          content = f.read().strip()
+                          if content:
+                              content_lines = content.splitlines()
+                              # Content appears directly under the file name
+                              for line in content_lines:
+                                  file_handle.write(f"  {line}\n")  # Just 2 spaces
+                  except Exception as e:
+                      file_handle.write(f"  [Error: {e}]\n")
+  
+  def save_tree_to_file(output_filename="folder_structure.txt"):
+      current_folder = os.path.dirname(os.path.abspath(__file__))
+      
+      with open(output_filename, "w", encoding="utf-8") as f:
+          f.write(f"{current_folder}/\n\n")
+          print_tree(current_folder, f, show_content=True)
+      
+      print(f"Output saved to {output_filename}")
+  
+  if __name__ == "__main__":
+      save_tree_to_file()
+├── folder_structure.txt
+├── pom.xml
+  <?xml version="1.0" encoding="UTF-8"?>
+  <project xmlns="http://maven.apache.org/POM/4.0.0"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+      <modelVersion>4.0.0</modelVersion>
+      <groupId>com.example</groupId>
+      <artifactId>AutoRank</artifactId>
+      <version>1.0.1</version>
+      <packaging>jar</packaging>
+      <properties>
+          <maven.compiler.source>17</maven.compiler.source>
+          <maven.compiler.target>17</maven.compiler.target>
+          <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      </properties>
+      <repositories>
+          <repository>
+              <id>papermc</id>
+              <url>https://repo.papermc.io/repository/maven-public/</url>
+          </repository>
+      </repositories>
+      <dependencies>
+          <dependency>
+              <groupId>io.papermc.paper</groupId>
+              <artifactId>paper-api</artifactId>
+              <version>1.20.4-R0.1-SNAPSHOT</version>
+              <scope>provided</scope>
+          </dependency>
+      </dependencies>
+      <build>
+          <finalName>${project.artifactId}-${project.version}</finalName>
+          <plugins>
+              <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-compiler-plugin</artifactId>
+                  <version>3.11.0</version>
+              </plugin>
+          </plugins>
+          <resources>
+              <resource>
+                  <directory>src/main/resources</directory>
+                  <filtering>false</filtering>
+              </resource>
+          </resources>
+      </build>
+  </project>
+└── src
+    └── main
+        ├── java
+        │   └── com
+        │       └── example
+        │           └── autorank
+        │               ├── AutoRank.java
+  package com.example.autorank;
+  
+  import com.example.autorank.commands.AutoRankCommand;
+  import com.example.autorank.config.ConfigManager;
+  import com.example.autorank.config.MessagesManager;
+  import com.example.autorank.listeners.PlayerJoinListener;
+  import com.example.autorank.manager.AutoRankManager;
+  import org.bukkit.command.PluginCommand;
+  import org.bukkit.plugin.java.JavaPlugin;
+  
+  public class AutoRank extends JavaPlugin {
+      private ConfigManager configManager;
+      private MessagesManager messagesManager;
+      private AutoRankManager autoRankManager;
+  
+      @Override
+      public void onEnable() {
+          saveDefaultConfig();
+          this.configManager = new ConfigManager(this);
+          this.messagesManager = new MessagesManager(this);
+          this.autoRankManager = new AutoRankManager(this);
+  
+          PluginCommand cmd = getCommand("autorank");
+          if (cmd != null) {
+              AutoRankCommand executor = new AutoRankCommand(this);
+              cmd.setExecutor(executor);
+              cmd.setTabCompleter(executor);
+          }
+  
+          getServer().getPluginManager().registerEvents(new PlayerJoinListener(this), this);
+          getLogger().info("AutoRank by Muvixo has been enabled.");
+      }
+  
+      @Override
+      public void onDisable() {
+          if (configManager != null) configManager.saveData();
+          getLogger().info("AutoRank disabled.");
+      }
+  
+      public ConfigManager getConfigManager() { return configManager; }
+      public MessagesManager getMessages()    { return messagesManager; }
+      public AutoRankManager getManager()     { return autoRankManager; }
+  }
+        │               ├── commands
+        │               │   └── AutoRankCommand.java
+  package com.example.autorank.commands;
+  
+  import com.example.autorank.AutoRank;
+  import com.example.autorank.util.TimeUtil;
+  import org.bukkit.command.Command;
+  import org.bukkit.command.CommandExecutor;
+  import org.bukkit.command.CommandSender;
+  import org.bukkit.command.TabCompleter;
+  import org.bukkit.configuration.ConfigurationSection;
+  
+  import java.text.SimpleDateFormat;
+  import java.util.ArrayList;
+  import java.util.Arrays;
+  import java.util.Collections;
+  import java.util.Date;
+  import java.util.List;
+  import java.util.stream.Collectors;
+  
+  public class AutoRankCommand implements CommandExecutor, TabCompleter {
+  
+      private final AutoRank plugin;
+  
+      public AutoRankCommand(AutoRank plugin) { this.plugin = plugin; }
+  
+      @Override
+      public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+  
+          if (args.length == 0) { help(sender); return true; }
+  
+          String sub = args[0].toLowerCase();
+  
+          // /autorank creator  (ALWAYS open to everyone)
+          if (sub.equals("creator") || sub.equals("credits") || sub.equals("author")) {
+              sender.sendMessage(plugin.getMessages().get("creator"));
+              return true;
+          }
+  
+          // Permission gate
+          if (!sender.hasPermission("autorank.admin.command") && !sender.isOp()) {
+              sender.sendMessage(plugin.getMessages().get("no-permission"));
+              return true;
+          }
+  
+          switch (sub) {
+              case "setup": {
+                  boolean active = plugin.getManager().isActive();
+                  sender.sendMessage(plugin.getMessages().get("setup-header"));
+                  sender.sendMessage(plugin.getMessages().get("setup-step1"));
+                  sender.sendMessage(plugin.getMessages().get("setup-step2"));
+                  sender.sendMessage(plugin.getMessages().get("setup-step3"));
+                  sender.sendMessage(plugin.getMessages().get("setup-status",
+                          "rank",     plugin.getConfig().getString("rank",        "&c(none)"),
+                          "duration", plugin.getConfig().getString("duration",    "&c(none)"),
+                          "time",     plugin.getConfig().getString("time-window", "&c(none)"),
+                          "active",   active ? "&aYES" : "&cNO"));
+                  return true;
+              }
+  
+              case "rank": {
+                  if (args.length < 2) {
+                      sender.sendMessage(plugin.getMessages().get("invalid-args", "usage", "/autorank rank <lp group>"));
+                      return true;
+                  }
+                  String rank = args[1];
+                  if (rank.length() > 32 || rank.contains(" ")) {
+                      sender.sendMessage(plugin.getMessages().get("rank-invalid"));
+                      return true;
+                  }
+                  plugin.getConfig().set("rank", rank);
+                  plugin.saveConfig();
+                  sender.sendMessage(plugin.getMessages().get("rank-set", "rank", rank));
+                  plugin.getManager().tryActivate();
+                  if (plugin.getManager().isActive()) {
+                      sender.sendMessage(plugin.getMessages().get("activated",
+                              "rank", rank,
+                              "duration", plugin.getConfig().getString("duration", "")));
+                  }
+                  return true;
+              }
+  
+              case "duration": {
+                  if (args.length < 2) {
+                      sender.sendMessage(plugin.getMessages().get("invalid-args", "usage", "/autorank duration <d|w|mo|s|m|h>"));
+                      return true;
+                  }
+                  String dur = args[1];
+                  if (TimeUtil.parseToMillis(dur) <= 0) {
+                      sender.sendMessage(plugin.getMessages().get("duration-invalid"));
+                      return true;
+                  }
+                  plugin.getConfig().set("duration", dur);
+                  plugin.saveConfig();
+                  sender.sendMessage(plugin.getMessages().get("duration-set", "duration", dur));
+                  plugin.getManager().tryActivate();
+                  if (plugin.getManager().isActive()) {
+                      sender.sendMessage(plugin.getMessages().get("activated",
+                              "rank", plugin.getConfig().getString("rank", ""),
+                              "duration", dur));
+                  }
+                  return true;
+              }
+  
+              case "time": {
+                  if (args.length < 2) {
+                      sender.sendMessage(plugin.getMessages().get("invalid-args", "usage", "/autorank time <d|w|mo|s|m|h>"));
+                      return true;
+                  }
+                  String t = args[1];
+                  if (TimeUtil.parseToMillis(t) <= 0) {
+                      sender.sendMessage(plugin.getMessages().get("time-invalid"));
+                      return true;
+                  }
+                  plugin.getConfig().set("time-window", t);
+                  plugin.saveConfig();
+                  sender.sendMessage(plugin.getMessages().get("time-set", "time", t));
+                  plugin.getManager().tryActivate();
+                  if (plugin.getManager().isActive()) {
+                      sender.sendMessage(plugin.getMessages().get("activated",
+                              "rank", plugin.getConfig().getString("rank", ""),
+                              "duration", plugin.getConfig().getString("duration", "")));
+                  } else {
+                      sender.sendMessage(plugin.getMessages().get("not-setup"));
+                  }
+                  return true;
+              }
+  
+              case "timeremaining":
+              case "remaining":
+              case "timeleft": {
+                  if (!plugin.getManager().isSetupComplete()) {
+                      sender.sendMessage(plugin.getMessages().get("not-setup"));
+                      return true;
+                  }
+                  if (!plugin.getManager().isActive()) {
+                      sender.sendMessage(plugin.getMessages().get("time-expired"));
+                      return true;
+                  }
+                  sender.sendMessage(plugin.getMessages().get("time-remaining",
+                          "remaining", TimeUtil.format(plugin.getManager().getRemainingMillis())));
+                  return true;
+              }
+  
+              case "assigned":
+              case "list":
+              case "userstowhomtherankhasbeenassigned": {
+                  ConfigurationSection sec = plugin.getConfigManager().getData().getConfigurationSection("assigned");
+                  if (sec == null || sec.getKeys(false).isEmpty()) {
+                      sender.sendMessage(plugin.getMessages().get("assigned-empty"));
+                      return true;
+                  }
+                  sender.sendMessage(plugin.getMessages().get("assigned-header",
+                          "count", String.valueOf(sec.getKeys(false).size())));
+                  SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                  for (String key : sec.getKeys(false)) {
+                      String name = sec.getString(key + ".name", key);
+                      long t = sec.getLong(key + ".time", 0L);
+                      sender.sendMessage(plugin.getMessages().get("assigned-entry",
+                              "player", name,
+                              "date", sdf.format(new Date(t))));
+                  }
+                  return true;
+              }
+  
+              case "reload": {
+                  plugin.reloadConfig();
+                  plugin.getMessages().reload();
+                  plugin.getConfigManager().loadData();
+                  sender.sendMessage(plugin.getMessages().get("reloaded"));
+                  return true;
+              }
+  
+              case "reset": {
+                  plugin.getManager().reset();
+                  sender.sendMessage(plugin.getMessages().get("reset-done"));
+                  return true;
+              }
+  
+              case "help":
+              default:
+                  help(sender);
+                  return true;
+          }
+      }
+  
+      private void help(CommandSender sender) {
+          sender.sendMessage(plugin.getMessages().get("help-header"));
+          sender.sendMessage(plugin.getMessages().get("help-setup"));
+          sender.sendMessage(plugin.getMessages().get("help-rank"));
+          sender.sendMessage(plugin.getMessages().get("help-duration"));
+          sender.sendMessage(plugin.getMessages().get("help-time"));
+          sender.sendMessage(plugin.getMessages().get("help-timeremaining"));
+          sender.sendMessage(plugin.getMessages().get("help-assigned"));
+          sender.sendMessage(plugin.getMessages().get("help-reload"));
+          sender.sendMessage(plugin.getMessages().get("help-reset"));
+          sender.sendMessage(plugin.getMessages().get("help-creator"));
+      }
+  
+      @Override
+      public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+          if (args.length == 1) {
+              List<String> subs = new ArrayList<>(Arrays.asList(
+                      "setup", "rank", "duration", "time",
+                      "timeremaining", "assigned", "creator",
+                      "reload", "reset", "help"));
+              return subs.stream()
+                      .filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase()))
+                      .collect(Collectors.toList());
+          }
+          if (args.length == 2) {
+              String sub = args[0].toLowerCase();
+              if (sub.equals("duration") || sub.equals("time")) {
+                  return Arrays.asList("10s", "30m", "1h", "24h", "7d", "2w", "1mo");
+              }
+          }
+          return Collections.emptyList();
+      }
+  }
+        │               ├── config
+        │               │   ├── ConfigManager.java
+  package com.example.autorank.config;
+  
+  import com.example.autorank.AutoRank;
+  import org.bukkit.configuration.file.FileConfiguration;
+  import org.bukkit.configuration.file.YamlConfiguration;
+  
+  import java.io.File;
+  import java.io.IOException;
+  
+  public class ConfigManager {
+      private final AutoRank plugin;
+      private final File dataFile;
+      private FileConfiguration data;
+  
+      public ConfigManager(AutoRank plugin) {
+          this.plugin = plugin;
+          this.dataFile = new File(plugin.getDataFolder(), "data.yml");
+          loadData();
+      }
+  
+      public void loadData() {
+          if (!dataFile.exists()) {
+              try {
+                  dataFile.getParentFile().mkdirs();
+                  dataFile.createNewFile();
+              } catch (IOException e) {
+                  plugin.getLogger().warning("Could not create data.yml: " + e.getMessage());
+              }
+          }
+          this.data = YamlConfiguration.loadConfiguration(dataFile);
+      }
+  
+      public void saveData() {
+          try { data.save(dataFile); }
+          catch (IOException e) { plugin.getLogger().warning("Could not save data.yml: " + e.getMessage()); }
+      }
+  
+      public void save() { plugin.saveConfig(); }
+      public FileConfiguration getData() { return data; }
+  }
+        │               │   └── MessagesManager.java
+  package com.example.autorank.config;
+  
+  import com.example.autorank.AutoRank;
+  import org.bukkit.ChatColor;
+  import org.bukkit.configuration.file.FileConfiguration;
+  import org.bukkit.configuration.file.YamlConfiguration;
+  
+  import java.io.File;
+  import java.io.InputStream;
+  import java.io.InputStreamReader;
+  import java.io.Reader;
+  import java.nio.charset.StandardCharsets;
+  
+  public class MessagesManager {
+  
+      private final AutoRank plugin;
+      private FileConfiguration messages;
+  
+      public MessagesManager(AutoRank plugin) {
+          this.plugin = plugin;
+          reload();
+      }
+  
+      public void reload() {
+          File file = new File(plugin.getDataFolder(), "messages.yml");
+          if (!file.exists()) {
+              plugin.saveResource("messages.yml", false);
+          }
+          this.messages = YamlConfiguration.loadConfiguration(file);
+  
+          try (InputStream in = plugin.getResource("messages.yml")) {
+              if (in != null) {
+                  Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8);
+                  YamlConfiguration def = YamlConfiguration.loadConfiguration(reader);
+                  this.messages.setDefaults(def);
+              }
+          } catch (Exception ignored) { }
+      }
+  
+      public String get(String key, String... replacements) {
+          String raw = messages.getString(key, "&cMissing message: " + key);
+  
+          // Replace custom placeholders (e.g. {rank}, {duration}, {player}, ...)
+          for (int i = 0; i + 1 < replacements.length; i += 2) {
+              raw = raw.replace("{" + replacements[i] + "}", replacements[i + 1]);
+          }
+  
+          // === FIX: always replace {prefix} so it never shows literally ===
+          String prefix = messages.getString("prefix", "");
+          raw = raw.replace("{prefix}", prefix);
+  
+          return ChatColor.translateAlternateColorCodes('&', raw);
+      }
+  }
+        │               ├── listeners
+        │               │   └── PlayerJoinListener.java
+  package com.example.autorank.listeners;
+  
+  import com.example.autorank.AutoRank;
+  import org.bukkit.entity.Player;
+  import org.bukkit.event.EventHandler;
+  import org.bukkit.event.EventPriority;
+  import org.bukkit.event.Listener;
+  import org.bukkit.event.player.PlayerJoinEvent;
+  
+  public class PlayerJoinListener implements Listener {
+  
+      private final AutoRank plugin;
+  
+      public PlayerJoinListener(AutoRank plugin) { this.plugin = plugin; }
+  
+      @EventHandler(priority = EventPriority.MONITOR)
+      public void onJoin(PlayerJoinEvent event) {
+          final Player player = event.getPlayer();
+  
+          plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+              if (!player.isOnline()) return;
+              if (!plugin.getManager().isActive()) return;
+  
+              // === NEW: skip OP players ===
+              if (plugin.getConfig().getBoolean("skip-ops", true) && player.isOp()) {
+                  return;
+              }
+  
+              if (plugin.getManager().hasReceived(player.getUniqueId())) return;
+              plugin.getManager().assignRank(player);
+          }, 20L);
+      }
+  }
+        │               ├── manager
+        │               │   └── AutoRankManager.java
+  package com.example.autorank.manager;
+  
+  import com.example.autorank.AutoRank;
+  import com.example.autorank.util.TimeUtil;
+  import org.bukkit.Bukkit;
+  import org.bukkit.configuration.ConfigurationSection;
+  import org.bukkit.entity.Player;
+  
+  import java.util.UUID;
+  
+  public class AutoRankManager {
+  
+      private final AutoRank plugin;
+  
+      public AutoRankManager(AutoRank plugin) { this.plugin = plugin; }
+  
+      public boolean isSetupComplete() {
+          return plugin.getConfig().getBoolean("setup-complete", false);
+      }
+  
+      public boolean isActive() {
+          if (!isSetupComplete()) return false;
+          long start = plugin.getConfig().getLong("start-time", 0L);
+          String tw = plugin.getConfig().getString("time-window", "");
+          long window = TimeUtil.parseToMillis(tw);
+          if (window <= 0 || start <= 0) return false;
+          return System.currentTimeMillis() < start + window;
+      }
+  
+      public long getRemainingMillis() {
+          if (!isSetupComplete()) return 0L;
+          long start = plugin.getConfig().getLong("start-time", 0L);
+          long window = TimeUtil.parseToMillis(plugin.getConfig().getString("time-window", ""));
+          if (window <= 0 || start <= 0) return 0L;
+          return Math.max(0L, (start + window) - System.currentTimeMillis());
+      }
+  
+      public void tryActivate() {
+          String rank = plugin.getConfig().getString("rank", "");
+          String dur  = plugin.getConfig().getString("duration", "");
+          String tw   = plugin.getConfig().getString("time-window", "");
+  
+          if (rank == null || rank.isEmpty()) return;
+          if (dur == null  || dur.isEmpty())  return;
+          if (tw == null   || tw.isEmpty())   return;
+          if (TimeUtil.parseToMillis(dur) <= 0) return;
+          if (TimeUtil.parseToMillis(tw)  <= 0) return;
+  
+          plugin.getConfig().set("start-time", System.currentTimeMillis());
+          plugin.getConfig().set("setup-complete", true);
+          plugin.saveConfig();
+      }
+  
+      public boolean hasReceived(UUID uuid) {
+          ConfigurationSection sec = plugin.getConfigManager().getData().getConfigurationSection("assigned");
+          return sec != null && sec.contains(uuid.toString());
+      }
+  
+      public void assignRank(Player player) {
+          String rank = plugin.getConfig().getString("rank", "");
+          String dur  = plugin.getConfig().getString("duration", "");
+          if (rank.isEmpty() || dur.isEmpty()) return;
+  
+          // Run the LuckPerms command from console
+          String cmd = "lp user " + player.getName() + " parent addtemp " + rank + " " + dur;
+          Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+  
+          // === NEW: send the congratulation message to the player ===
+          player.sendMessage(plugin.getMessages().get("player-received",
+                  "rank", rank,
+                  "duration", dur));
+  
+          // Save to data.yml
+          String path = "assigned." + player.getUniqueId();
+          plugin.getConfigManager().getData().set(path + ".name", player.getName());
+          plugin.getConfigManager().getData().set(path + ".time", System.currentTimeMillis());
+          plugin.getConfigManager().saveData();
+      }
+  
+      public void reset() {
+          plugin.getConfig().set("setup-complete", false);
+          plugin.getConfig().set("rank", "");
+          plugin.getConfig().set("duration", "");
+          plugin.getConfig().set("time-window", "");
+          plugin.getConfig().set("start-time", 0L);
+          plugin.saveConfig();
+  
+          plugin.getConfigManager().getData().set("assigned", null);
+          plugin.getConfigManager().saveData();
+      }
+  }
+        │               └── util
+        │                   └── TimeUtil.java
+  package com.example.autorank.util;
+  
+  import java.util.regex.Matcher;
+  import java.util.regex.Pattern;
+  
+  public final class TimeUtil {
+      private static final Pattern PATTERN = Pattern.compile("^(\\d+)(mo|[smhdwy])$");
+  
+      private TimeUtil() { }
+  
+      public static long parseToMillis(String input) {
+          if (input == null || input.isEmpty()) return -1L;
+          Matcher m = PATTERN.matcher(input.toLowerCase().trim());
+          if (!m.matches()) return -1L;
+          long amount;
+          try { amount = Long.parseLong(m.group(1)); }
+          catch (NumberFormatException e) { return -1L; }
+          if (amount <= 0) return -1L;
+          String unit = m.group(2);
+          long mul;
+          switch (unit) {
+              case "s":  mul = 1000L; break;
+              case "m":  mul = 60_000L; break;
+              case "h":  mul = 3_600_000L; break;
+              case "d":  mul = 86_400_000L; break;
+              case "w":  mul = 604_800_000L; break;
+              case "mo": mul = 2_592_000_000L; break;
+              case "y":  mul = 31_536_000_000L; break;
+              default:   return -1L;
+          }
+          return amount * mul;
+      }
+  
+      public static String format(long millis) {
+          if (millis <= 0) return "0s";
+          long s = millis / 1000L;
+          long d = s / 86400L; s %= 86400L;
+          long h = s / 3600L;  s %= 3600L;
+          long m = s / 60L;    s %= 60L;
+          StringBuilder sb = new StringBuilder();
+          if (d > 0) sb.append(d).append("d ");
+          if (h > 0) sb.append(h).append("h ");
+          if (m > 0) sb.append(m).append("m ");
+          if (s > 0 || sb.length() == 0) sb.append(s).append("s");
+          return sb.toString().trim();
+      }
+  }
+        └── resources
+            ├── config.yml
+  # ============================================================
+  #  AutoRank - by Muvixo  (v1.0.2)
+  # ============================================================
+  setup-complete: false
+  rank: ""
+  duration: ""
+  time-window: ""
+  start-time: 0
+  
+  # Players who are OP will NOT receive the rank.
+  # Set to false if you want OPs to get the rank too.
+  skip-ops: true
+            ├── messages.yml
+  # ============================================================
+  #  MineStorm AutoRank messages
+  #  Design: Aqua (&b) + White (&f)  |  v1.0.2
+  #  Fully customizable, supports &-color codes
+  # ============================================================
+  
+  prefix: "&8[&b&lMineStorm&8] &f"
+  
+  no-permission: "{prefix}&cYou don't have permission to use this command."
+  player-only: "{prefix}&cOnly players can use this command."
+  invalid-args: "{prefix}&fUsage: &b{usage}"
+  
+  # /autorank creator  (always available to everyone)
+  creator: "{prefix}&fCreated by &b&lMuvixo"
+  
+  # Help
+  help-header: "{prefix}&b&lCommands"
+  help-setup: "&b▸ &f/autorank setup &7- &bShow the setup wizard"
+  help-rank: "&b▸ &f/autorank rank &b<group> &7- &bSet the LuckPerms group to give"
+  help-duration: "&b▸ &f/autorank duration &b<time> &7- &bDuration of the temporary rank &f(e.g. 7d)"
+  help-time: "&b▸ &f/autorank time &b<time> &7- &bHow long AutoRank stays active &f(e.g. 24h)"
+  help-timeremaining: "&b▸ &f/autorank timeremaining &7- &bTime left before AutoRank stops"
+  help-assigned: "&b▸ &f/autorank assigned &7- &bList players who received the rank"
+  help-reload: "&b▸ &f/autorank reload &7- &bReload configs"
+  help-reset: "&b▸ &f/autorank reset &7- &bReset AutoRank completely"
+  help-creator: "&b▸ &f/autorank creator &7- &bShow plugin credits"
+  
+  # Setup wizard
+  setup-header: "{prefix}&b&lSetup Wizard"
+  setup-step1: "&b1) &f/autorank rank &b<lp rank group>"
+  setup-step2: "&b2) &f/autorank duration &b<d|w|mo|s|m|h>"
+  setup-step3: "&b3) &f/autorank time &b<same format>"
+  setup-status: "&bStatus: &frank=&b{rank}&f, duration=&b{duration}&f, time=&b{time}&f, active=&b{active}"
+  activated: "{prefix}&bAutoRank is now &f&lACTIVE&b! Every joining player will receive &f{rank}&b for &f{duration}&b."
+  
+  # Rank / duration / time
+  rank-set: "{prefix}&bRank set to &f{rank}&b."
+  rank-invalid: "{prefix}&cPlease provide a valid group name."
+  duration-set: "{prefix}&bDuration set to &f{duration}&b."
+  duration-invalid: "{prefix}&cInvalid duration. Use format: &f10s, 5m, 24h, 7d, 2w, 1mo, 1y"
+  time-set: "{prefix}&bTime window set to &f{time}&b."
+  time-invalid: "{prefix}&cInvalid time. Use format: &f10s, 5m, 24h, 7d, 2w, 1mo, 1y"
+  not-setup: "{prefix}&cAutoRank is not fully set up yet. Use &f/autorank setup&c."
+  
+  # Time remaining
+  time-remaining: "{prefix}&bTime remaining: &f{remaining}"
+  time-expired: "{prefix}&cAutoRank has expired. Run &f/autorank setup&c again."
+  
+  # Assigned players
+  assigned-header: "{prefix}&bPlayers who received the rank &7({count})"
+  assigned-entry: "&b▸ &f{player} &7at &b{date}"
+  assigned-empty: "{prefix}&7No players have received the rank yet."
+  
+  # === Message sent to the player who receives the rank ===
+  player-received: "{prefix}&b&lCongratulations! &fYou have received the &b{rank}&f rank for &b{duration}&f!"
+  
+  # Misc
+  reloaded: "{prefix}&bConfiguration reloaded."
+  reset-done: "{prefix}&bAutoRank has been reset."
+            └── plugin.yml
+  name: AutoRank
+  version: 1.0.1
+  main: com.example.autorank.AutoRank
+  api-version: '1.20'
+  author: Muvixo
+  description: Automatically gives a temporary LuckPerms rank to players who join during a configured time window.
+  depend: [LuckPerms]
+  commands:
+    autorank:
+      description: AutoRank main command
+      usage: /autorank <setup|rank|duration|time|timeremaining|assigned|creator|reload|reset|help>
+      aliases: [ar]
+  permissions:
+    autorank.admin.command:
+      description: Access to all /autorank admin commands.
+      default: op
+    autorank.creator:
+      description: Allows viewing /autorank creator.
+      default: true
